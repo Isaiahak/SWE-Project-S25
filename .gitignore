@@ -23,4 +23,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-/frontend/swe-project-s25/.env
+/Frontend/swe-project-s25/.env
