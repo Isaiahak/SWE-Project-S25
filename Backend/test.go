@@ -4,6 +4,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"log"
 	"net/http"
 )
 
@@ -32,7 +33,7 @@ func getLobbies(c *gin.Context) {
 func createLobby(c *gin.Context) {
 	var input struct {
 		GameID     string `json:"game_id" binding:"required"`
-		userExists string `json:"user_exits" binding:"required"`
+		UserExists `json:"user_exists" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -51,21 +52,29 @@ func createLobby(c *gin.Context) {
 	}
 	lobbies[lobbyID] = newLobby
 
-	//creates an instance of the user who created the lobby
-	if input.userExists == false {
+	log.Println("does the current user exists: ", input.UserExists)
+	log.Println("the amount of users is: 4", len(users))
+	log.Println("the amount of lobbies is: ", len(lobbies))
+	log.Println("game id is: ", input.GameID)
+
+	if input.UserExists == false {
 		userID := uuid.New().String()
 		newUser := user{
 			UserID:   userID,
-			UserName: "newUser",
+			UserName: "new User",
 		}
 		users[userID] = newUser
+		c.IndentedJSON(http.StatusCreated, gin.H{
+			"message": "created user and lobby",
+			"user":    newUser,
+			"lobby":   newLobby,
+		})
+	} else {
+		c.IndentedJSON(http.StatusCreated, gin.H{
+			"message": "created lobby",
+			"lobby":   newLobby,
+		})
 	}
-
-	c.IndentedJSON(http.StatusCreated, gin.H{
-		"message": "created user and lobby",
-		"user":    newUser,
-		"lobby":   newLobby,
-	})
 
 }
 

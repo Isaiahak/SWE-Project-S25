@@ -9,13 +9,20 @@ body {
 :root {
   --primary-color: #C5BAFF;
   --secondary-color: #FBFBFB;
+  -ms-overflow-style: none;  
+  scrollbar-width: none;
+}
+
+-webkit-scrollbar {
+  display: none;
 }
 
 /* Tailwind CSS Theme Variables (Converted HEX to oklch) */
 /* Resource -> https://oklch.com/ */
-
+/*
 @theme {
   --color-primary: oklch(0.82 0.0965 291.43);
   --color-secondary: oklch(0.99 0 0);
   --color-sidebar-primary: oklch(0.71 0.1627 288.8);
 }
+*/

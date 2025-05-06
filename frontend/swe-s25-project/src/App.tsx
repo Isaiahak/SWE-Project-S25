@@ -1,7 +1,5 @@
-
 import {BrowserRouter, Routes, Route} from 'react-router-dom'
-
-import Sidebar from "./Sidebar";
+import git from "./Sidebar";
 
 export default function App() {
   return (
