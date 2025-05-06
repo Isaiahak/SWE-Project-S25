@@ -31,7 +31,8 @@ func getLobbies(c *gin.Context) {
 
 func createLobby(c *gin.Context) {
 	var input struct {
-		GameID string `json:"game_id" binding:"required"`
+		GameID     string `json:"game_id" binding:"required"`
+		userExists string `json:"user_exits" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -51,12 +52,14 @@ func createLobby(c *gin.Context) {
 	lobbies[lobbyID] = newLobby
 
 	//creates an instance of the user who created the lobby
-	userID := uuid.New().String()
-	newUser := user{
-		UserID:   userID,
-		UserName: "newUser",
+	if input.userExists == false {
+		userID := uuid.New().String()
+		newUser := user{
+			UserID:   userID,
+			UserName: "newUser",
+		}
+		users[userID] = newUser
 	}
-	users[userID] = newUser
 
 	c.IndentedJSON(http.StatusCreated, gin.H{
 		"message": "created user and lobby",
