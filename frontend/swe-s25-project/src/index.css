@@ -1,2 +1,21 @@
 @import "tailwindcss";
 
+body {
+  background-color: var(--primary-color);
+  color: var(--secondary-color); 
+}
+
+/* Remove later? */
+:root {
+  --primary-color: #C5BAFF;
+  --secondary-color: #FBFBFB;
+}
+
+/* Tailwind CSS Theme Variables (Converted HEX to oklch) */
+/* Resource -> https://oklch.com/ */
+
+@theme {
+  --color-primary: oklch(0.82 0.0965 291.43);
+  --color-secondary: oklch(0.99 0 0);
+  --color-sidebar-primary: oklch(0.71 0.1627 288.8);
+}
