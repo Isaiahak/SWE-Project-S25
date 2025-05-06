@@ -1,26 +1,36 @@
 import LobbyButton from "../components/LobbyButton";
 import Player from "../components/Player";
 
+import { Link } from "react-router-dom";
+
+import { ArrowBigLeft } from "lucide-react";
+
 export default function LobbyPage() {
   return (
     <>
       {/* Top Section */}
       <div className="p-4 gap-12 h-[60vh] w-full bg-primary flex flex-col">
         <div className="flex justify-between">
-          <Player avatar="/icons/anaconda.png" nickname="MrSnake"/>
-          <Player avatar="/icons/blackbird.png" nickname="SR71"/>
-          <Player avatar="/icons/cow.png" nickname="MatadorKiller123"/>
-          <Player avatar="/icons/ganesha.png" nickname="JAW3D"/>
+          <Player isHost={true} avatar="/icons/anaconda.png" nickname="MrSnake" />
+          <Player isHost={false} avatar="/icons/blackbird.png" nickname="SR71" />
+          <Player isHost={false} avatar="/icons/cow.png" nickname="MatadorKiller123" />
+          <Player isHost={false} avatar="/icons/ganesha.png" nickname="JAW3D" />
         </div>
         <div className="flex justify-between">
-          <Player avatar="/icons/jaguar.png" nickname="MovesLikeJaguar"/>
-          <Player avatar="/icons/panda-bear.png" nickname="XxDragonWarriorxX"/>
-          <Player avatar="/icons/turtle.png" nickname="Raphael"/>
-          <Player avatar="/icons/bear.png" nickname="Carmy"/>
+          <Player isHost={false} avatar="/icons/jaguar.png" nickname="MovesLikeJaguar" />
+          <Player isHost={false} avatar="/icons/panda-bear.png" nickname="XxDragonWarriorxX" />
+          <Player isHost={false} avatar="/icons/turtle.png" nickname="Raphael" />
+          <Player isHost={false} avatar="/icons/bear.png" nickname="Carmy" />
         </div>
       </div>
       {/* Bottom Section */}
       <div className="h-[40vh] w-full bg-tertiary flex justify-evenly items-center">
+        <Link
+          to="/"
+          className="bg-secondary w-20 h-10 text-black rounded-full flex justify-center items-center shadow-md hover:shadow-lg hover:shadow-indigo-400 transition-transform delay-50 duration-200 ease-in-out hover:scale-105"
+        >
+          <ArrowBigLeft strokeWidth={2}/>
+        </Link>
         <LobbyButton
           label="CHANGE NICKNAME"
           height="h-20"
