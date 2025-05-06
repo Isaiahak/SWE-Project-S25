@@ -24,3 +24,4 @@ dist-ssr
 *.sln
 *.sw?
 /Frontend/swe-project-s25/.env
+.env
