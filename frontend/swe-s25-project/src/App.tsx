@@ -1,3 +1,5 @@
+import {BrowserRouter, Routes, Route} from 'react-router-dom'
+
 function App() {
   
   const color = {
@@ -7,11 +9,14 @@ function App() {
   };
   
   return (
-    <>
-      <div className={`bg-[${color.primary}] h-screen w-full flex flex-col items-center`}>
+    <BrowserRouter>
+      <Routes>
+
+        <div className={`bg-[${color.primary}] h-screen w-full flex flex-col items-center`}>
         <h1 className={`text-[${color.secondary}] text-xl`}>SWE S25 Project</h1>
       </div>
-    </>
+      </Routes>
+    </BrowserRouter>
   );
 }
 

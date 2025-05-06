@@ -1,0 +1,162 @@
+/* sidebar container */
+.sidebar-container{
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	position: absolute;
+	width: 315px;
+	height: 1024px;
+	background: #9F8DFF;
+}
+
+.main-buttons{
+	width:100%;
+	height: 100%;
+}
+
+/* settings icon */
+.settings-icon{
+	position: absolute;
+	width: 62px;
+	height: 62px;
+	left: 22px;
+	top: 948px;
+	background: #FBFBFB;
+}
+
+/* create button container */
+.create-button-container{
+	position: absolute;
+	width: 277px;
+	height: 68px;
+	left: 22px;
+	top: 278px;
+	background: #FBFBFB;
+	box-shadow: 0px 4px 4px -1px rgba(0, 0, 0, 0.25);
+	border-radius: 20px;
+	font-family: 'JetBrains Mono';
+	font-style: normal;
+	font-weight: 400;
+	font-size: 40px;
+	line-height: 53px;
+	color: #000000;
+}
+.create-button-container:hover{
+	border: 5px solid #C5BAFF;
+}
+
+
+/* join button container */
+.join-button-container{ 
+	position: absolute;
+	width: 277px;
+	height: 68px;
+	left: 22px;
+	top: 386px;
+	background: #FBFBFB;
+	box-shadow: 0px 4px 4px -1px rgba(0, 0, 0, 0.25);
+	border-radius: 20px;
+	font-family: 'JetBrains Mono';
+	font-style: normal;
+	font-weight: 400;
+	font-size: 40px;
+	line-height: 53px;
+	color: #000000;
+}
+.join-button-container:hover{
+	border: 5px solid #C5BAFF;
+}
+
+
+/* play button container */
+.play-button-container{
+	position: absolute;
+	width: 277px;
+	height: 68px;
+	left: 22px;
+	top: 162px;
+	background: #FBFBFB;
+	box-shadow: 0px 4px 4px -1px rgba(0, 0, 0, 0.25);
+	border-radius: 20px;
+	font-family: 'JetBrains Mono';
+	font-style: normal;
+	font-weight: 400;
+	font-size: 40px;
+	line-height: 53px;
+	color: #000000;
+}
+.play-button-container:hover{
+	border: 5px solid #C5BAFF;
+}
+
+
+/* friend button container */
+.friend-button-container{
+	position: absolute;
+	width: 277px;
+	height: 68px;
+	left: 22px;
+	top: 502px;
+	background: #FBFBFB;
+	box-shadow: 0px 4px 4px -1px rgba(0, 0, 0, 0.25);
+	border-radius: 20px;
+	font-family: 'JetBrains Mono';
+	font-style: normal;
+	font-weight: 400;
+	font-size: 40px;
+	line-height: 53px;
+	color: #000000;
+}
+
+.friend-button-container:hover{
+	border: 5px solid #C5BAFF;
+}
+
+.account-options-container{
+	width: 100%;
+	height: 5rem;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+}
+
+/* Info icon */
+.info-button{
+	width: 61px;
+	height: 61px;
+	border: 7px solid #FFFFFF;
+	background: #C5BAFF;
+	margin-inline: 1rem;
+}
+
+.info-button:hover{
+	border: 7px solid #9F8DFF;
+}
+
+/* icon */
+.settings-button{
+	width: 61px;
+	height: 61px;
+	border: 7px solid #FFFFFF;
+	background: #C5BAFF;
+	margin-inline: 1rem;
+}
+
+.settings-button:hover{
+	border: 7px solid #9F8DFF;
+}
+
+/* profile icon */
+.profile-button{
+	width: 61px;
+	height: 61px;
+	border: 7px solid #FFFFFF;
+	background: #C5BAFF;
+	margin-inline: 1rem;
+}
+
+.profile-button:hover{
+	border: 7px solid #9F8DFF;
+}
+
+

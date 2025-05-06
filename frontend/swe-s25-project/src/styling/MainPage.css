@@ -1,0 +1,16 @@
+.mainpage-container{
+	width: 160rem;
+	height: 100rem;
+	background: #C5BAFF;
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+}
+
+.main-container{
+	width: 120rem;
+	height: 80rem;
+	align-self: center;
+	background: #C5BAFF;
+	margin-inline: auto;
+}
