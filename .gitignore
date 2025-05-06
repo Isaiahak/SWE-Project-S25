@@ -7,7 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+Frontend/swe-s25-project/node_modules*
 dist
 dist-ssr
 *.local
