@@ -1,3 +1,5 @@
+/* External Fonts */
+@import url('https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;600;700&display=swap');
 @import "tailwindcss";
 
 body {
@@ -15,6 +17,11 @@ body {
 /* Resource -> https://oklch.com/ */
 
 @theme {
+
+  /* Font Family */
+  --font-display: "MuseoModerno", "sans-serif";
+
+  /* Color Scheme */
   --color-primary: oklch(0.82 0.0965 291.43);
   --color-secondary: oklch(0.99 0 0);
   --color-sidebar-primary: oklch(0.71 0.1627 288.8);
