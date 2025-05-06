@@ -1,6 +1,7 @@
 /* External Fonts */
 @import url('https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap'); */
 
 @import "tailwindcss";
 
@@ -22,6 +23,7 @@ body {
   /* Font Family */
   --font-display: "MuseoModerno", "sans-serif";
   --font-display: "Bebas Neue", "sans-serif";
+  /* --font-display: "JetBrains Mono", monospace; */
 
   /* Color Scheme */
   --color-primary: oklch(0.82 0.0965 291.43);
