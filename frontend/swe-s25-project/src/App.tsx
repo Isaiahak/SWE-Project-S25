@@ -1,8 +1,11 @@
+
+import {BrowserRouter, Routes, Route} from 'react-router-dom'
+
 import Sidebar from "./Sidebar";
 
 export default function App() {
   return (
-    <>
+    <BrowserRouter>
       <div className={`h-screen w-full flex items-center text-shadow-xs`}>
         <Sidebar />
         <div>
@@ -11,6 +14,7 @@ export default function App() {
           </h1>
         </div>
       </div>
-    </>
+      </Routes>
+    </BrowserRouter>
   );
 }
