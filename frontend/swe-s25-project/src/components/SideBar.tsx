@@ -11,14 +11,11 @@ function SideBar(){
 
 	const CreateLobby = async () =>{
 		try{
-			const userid = Cookies.get('userid')
-			console.log(userid)
-			const userExists =  userid != undefined ? true : false 
-			console.log("this is the userid: ",userExists)
-			const res = await axios.post(`${backend_url}/create-lobby`,{game_id: `${game}`,user_exists: userExists })
+			const user = Cookies.get('user')
+			const res = await axios.post(`${backend_url}/create-lobby`,{game_id: `${game}`,user: user })
 			console.log(res.data)
 			if (userExists == "false"){
-				Cookies.set('userid',res.data.user.UserID)
+				Cookies.set('user',res.data.user)
 			}
 
 		}
