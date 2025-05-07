@@ -1,11 +1,6 @@
-import '../styling/SideBar.css'
-import axios from 'axios'
-import useGameContext from './useGameContext.tsx'
-import Cookies from 'js-cookie'
+import ActionButton from "./ActionButton";
 
-
-
-function SideBar(){
+export default function Sidebar() {
 	const {game} = useGameContext()
 	const backend_url = import.meta.env.VITE_BACKEND_URL
 
@@ -24,22 +19,17 @@ function SideBar(){
 			console.error("didn't get a lobby",error)
 		}
 	}
-
-	return(
-		<div className='sidebar-container'>
-		<div className='main-buttons'>	
-			<button className="play-button-container">PLAY</button>
-			<button className="create-button-container" onClick={CreateLobby}>CREATE</button>
-			<button className="join-button-container">JOIN</button>
-			<button className="friend-button-container">FRIENDS</button>
-		</div>
-			<div className="account-options-container">
-				<button className="profile-button"></button>
-				<button className="settings-button"></button>
-				<button className="info-button"></button>
-			</div>
-		</div>
-	)
+  return (
+    <nav className="h-screen w-80 flex flex-col justify-between bg-sidebar-primary shadow-lg">
+      <div className="flex flex-col">
+        <h1 className="text-center font-[Bebas Neue] font-bold text-[2rem]">
+          Aken Studios
+        </h1>
+        <ActionButton label="PLAY"/>
+        <ActionButton label onClick={CreateLobby}="CREATE" />
+        <ActionButton label="JOIN" />
+        <ActionButton label="FRIENDS" />
+      </div>
+    </nav>
+  );
 }
-
-export default SideBar
