@@ -13,9 +13,10 @@
     "@tailwindcss/vite": "^4.1.5",
     "axios": "^1.9.0",
     "js-cookie": "^3.0.5",
+    "lucide-react": "^0.507.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "tailwindcss": "^4.1.5"
+    "react-router-dom": "^7.5.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
@@ -26,6 +27,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
+    "tailwindcss": "^4.1.5",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.26.1",
     "vite": "^6.3.1"

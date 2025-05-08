@@ -1,11 +1,26 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import MainPage from "./components/MainPage.tsx"
-import './index.css'
-import App from './App.tsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
 
-createRoot(document.getElementById('root')!).render(
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import HomePage from "./pages/HomePage.tsx";
+import LobbyPage from "./pages/LobbyPage.tsx";
+import NotFoundPage from "./pages/NotFoundPage.tsx";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <HomePage />,
+    errorElement: <NotFoundPage />,
+  },
+  {
+    path: "/lobby",
+    element: <LobbyPage />,
+  },
+]);
+
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <MainPage/>
-  </StrictMode>,
-)
+    <RouterProvider router={router} />
+  </StrictMode>
+);
