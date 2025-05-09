@@ -1,12 +1,14 @@
 /* External Fonts */
 @import url('https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap'); 
+
 
 @import "tailwindcss";
 
 body {
   background-color: var(--primary-color);
-  color: var(--secondary-color); 
+  color: var(--secondary-color);  
 }
 
 :root {
@@ -14,20 +16,12 @@ body {
   --secondary-color: #FBFBFB;
   -ms-overflow-style: none;  
   scrollbar-width: none;
-}
-
--webkit-scrollbar {
-  display: none;
-}
-
-/* Tailwind CSS Theme Variables (Converted HEX to oklch) */
-/* Resource -> https://oklch.com/ */
-/*
-@theme {
 
   /* Font Family */
   --font-display: "MuseoModerno", "sans-serif";
   --font-display: "Bebas Neue", "sans-serif";
+  --font-display: "JetBrains Mono", monospace; 
+
 
   /* Color Scheme */
   --color-primary: oklch(0.82 0.0965 291.43);
@@ -37,4 +31,15 @@ body {
   --color-hover: oklch(0.6 0.2241 284.72);
   --color-sidebar-primary: oklch(0.71 0.1627 288.8);
 }
-*/
+
+-webkit-scrollbar {
+  display: none;
+}
+
+/* Tailwind CSS Theme Variables (Converted HEX to oklch) */
+/* Resource -> https://oklch.com/ */
+
+
+@theme 
+
+ 

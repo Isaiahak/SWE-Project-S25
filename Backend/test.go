@@ -8,31 +8,25 @@ import (
 	"net/http"
 )
 
-// struct for the lobby objects the server will contain
+// struct for the lobby objects the server will contain a list of users
+// i need to worry about this lobby implementation becasue if for some reason a user removes
+// their userid from the cookies there slot in the lobby will forever be filled which can lead to complications
+
 type Lobby struct {
-	LobbyID           string  `json:id`
-	GameID            string  `json:game_id`
-	PlayerCount       int32   `json:player_count`
-	LobbyType         string  `json:lobby_type`
-	PreferredLanguage string  `json:language`
-	ChatID            string  `json:chat_id`
-	Difficulty        string  `json:difficulty`
-	HostID            *string `json:host_id`
+	LobbyID           string    `json:id`
+	GameID            string    `json:game_id`
+	PlayerCount       int32     `json:player_count`
+	LobbyType         string    `json:lobby_type`
+	PreferredLanguage string    `json:language`
+	ChatID            string    `json:chat_id`
+	Difficulty        string    `json:difficulty`
+	HostID            *string   `json:host_id`
+	Members           []*string `json:members`
+	UsedIDs           []bool    `json:usedIDs`
 }
-
-type User struct {
-	UserID   string `json:user_id`
-	UserName string `json:user_name`
-}
-
-// list of users
-var users = make(map[string]*User)
 
 // splice of lobby structs containing initial lobbies
 var lobbies = make(map[string]*Lobby)
-
-// map of lobby pairs
-var lobbyMembers = make(map[string][]*User)
 
 // changes the lobby type from public to private and vice versa
 func changeLobbyType(c *gin.Context) {
@@ -79,17 +73,24 @@ func closeLobby(c *gin.Context) {
 		})
 		return
 	}
-	// remove all members from the lobby
-	delete(lobbyMembers, input.LobbyID)
-	// reroute the members to main page
-	delete(lobbies, input.LobbyID)
+
+	if input.UserID == *lobbies[input.LobbyID].HostID {
+		delete(lobbies, input.LobbyID)
+		c.IndentedJSON(http.StatusOK, gin.H{
+			"message": "server has been closed",
+		})
+	} else {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"message": "non-host members cannot close server",
+		})
+	}
 }
 
-// leaves a
+// leaves lobby is a frontend side task which should remove the
 func leaveLobby(c *gin.Context) {
 	var input struct {
-		LobbyID string `json:"game_id" binding:"required"`
-		User    User   `json:"user"`
+		LobbyID string `json:"lobby_id" binding:"required"`
+		UserID  string `json:"user_id"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -98,23 +99,30 @@ func leaveLobby(c *gin.Context) {
 		})
 		return
 	}
-
-	for i := 0; i < len(lobbyMembers[input.LobbyID]); i++ {
-		if lobbyMembers[input.LobbyID][i].UserID == input.User.UserID {
-			lobbyMembers[input.LobbyID] = append(lobbyMembers[input.LobbyID][:i], lobbyMembers[input.LobbyID][i+1:]...)
+	// we have two cases the host is leaving or a non host
+	if input.UserID == *lobbies[input.LobbyID].HostID {
+		delete(lobbies, input.LobbyID)
+		c.IndentedJSON(http.StatusOK, gin.H{
+			"message": "server has been closed",
+		})
+	} else {
+		for i := 0; i < 8; i++ {
+			if input.UserID == *lobbies[input.LobbyID].Members[i] {
+				lobbies[input.LobbyID].UsedIDs[i] = false
+			}
 		}
+
+		c.IndentedJSON(http.StatusOK, gin.H{
+			"message": "lefted lobby",
+			"lobby":   input.LobbyID,
+		})
 	}
-	c.IndentedJSON(http.StatusOK, gin.H{
-		"message": "lefted lobby",
-		"lobby":   input.LobbyID,
-	})
 }
 
 // joins a lobby and creates a user if required
 func joinLobby(c *gin.Context) {
 	var input struct {
-		LobbyID string `json:"game_id" binding:"required"`
-		User    user   `json:"user"`
+		LobbyID string `json:"lobby_id" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -123,35 +131,43 @@ func joinLobby(c *gin.Context) {
 		})
 		return
 	}
-	if input.User.UserID == "" {
-		userID := uuid.New().String()
-		newUser := user{
-			UserID:   userID,
-			UserName: "NewUser",
+
+	_, ok := lobbies[input.LobbyID]
+	if ok {
+		var availableID string
+		var full bool
+		for i := 0; i < 8; i++ {
+			if lobbies[input.LobbyID].UsedIDs[i] == false {
+				availableID = *lobbies[input.LobbyID].Members[i]
+				lobbies[input.LobbyID].UsedIDs[i] = true
+				full = false
+			} else {
+				full = true
+			}
 		}
-		users[userID] = &newUser
-		lobbyMembers[input.LobbyID] = append(lobbyMembers[input.LobbyID], &newUser)
-		c.IndentedJSON(http.StatusCreated, gin.H{
-			"message": "created user and joined lobby",
-			"user":    newUser,
-			"lobby":   input.LobbyID,
-		})
+		if full == true {
+			c.IndentedJSON(http.StatusCreated, gin.H{
+				"message": "lobby full",
+			})
+		} else {
+			c.IndentedJSON(http.StatusCreated, gin.H{
+				"message": "joined lobby",
+				"user":    availableID, // fill with user id from lobby
+				"lobby":   input.LobbyID,
+			})
+		}
 	} else {
-		lobbyMembers[input.LobbyID] = append(lobbyMembers[input.LobbyID], &input.User)
-		c.IndentedJSON(http.StatusCreated, gin.H{
-			"message": "joined lobby",
-			"user":    input.User,
-			"lobby":   input.LobbyID,
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"message": "invalid lobby id",
 		})
 	}
+
 }
 
 // creates a public lobby and creates a user if required
 func createLobby(c *gin.Context) {
 	var input struct {
 		GameID string `json:"game_id" binding:"required"`
-		// we might want to add the lobby_type here
-		User User `json:"user"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -163,6 +179,17 @@ func createLobby(c *gin.Context) {
 
 	// creates a instance of a lobby for the user
 	lobbyID := uuid.New().String()
+
+	//creates a slice of userid pointers for the lobby
+	// and creates a slice of bools which represent which userids are being used
+	UsedIDs_list := make([]bool, 0, 8)
+	Members_list := make([]*string, 0, 8)
+	for i := 0; i < 8; i++ {
+		userID := uuid.New().String()
+		Members_list = append(Members_list, &userID)
+		UsedIDs_list = append(UsedIDs_list, false)
+	}
+
 	newLobby := Lobby{
 		LobbyID:           lobbyID,
 		GameID:            input.GameID,
@@ -171,39 +198,23 @@ func createLobby(c *gin.Context) {
 		PreferredLanguage: "english",
 		ChatID:            "",
 		Difficulty:        "normal",
-		HostID:            nil,
+		HostID:            Members_list[0],
+		Members:           Members_list,
+		UsedIDs:           UsedIDs_list,
 	}
+	// after we set the host to the first id we set the first usedid bool to true
+	UsedIDs_list[0] = true
 	//saving the pointers of the new lobbies
 	lobbies[lobbyID] = &newLobby
 
-	log.Println("the amount of users is: 4", len(users))
 	log.Println("the amount of lobbies is: ", len(lobbies))
 	log.Println("game id is: ", input.GameID)
 
-	if input.User.UserID == "" {
-		userID := uuid.New().String()
-		newUser := User{
-			UserID:   userID,
-			UserName: "new User",
-		}
-		lobbies[lobbyID].HostID = &userID
-		//saving the pointer of the user
-		users[userID] = &newUser
-		lobbyMembers[lobbyID] = append(lobbyMembers[lobbyID], &newUser)
-		c.IndentedJSON(http.StatusCreated, gin.H{
-			"message": "created user and lobby",
-			"user":    newUser,
-			"lobby":   newLobby,
-		})
-	} else {
-		lobbies[lobbyID].HostID = &users[input.User.UserID].UserID
-		lobbyMembers[lobbyID] = append(lobbyMembers[lobbyID], &input.User)
-		c.IndentedJSON(http.StatusCreated, gin.H{
-			"message": "created lobby",
-			"lobby":   newLobby,
-		})
-	}
-
+	c.IndentedJSON(http.StatusCreated, gin.H{
+		"message":  "created lobby",
+		"lobby_id": newLobby.LobbyID,
+		"user_id":  *newLobby.HostID,
+	})
 }
 
 func main() {
