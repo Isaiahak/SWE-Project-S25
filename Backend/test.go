@@ -151,9 +151,9 @@ func joinLobby(c *gin.Context) {
 			})
 		} else {
 			c.IndentedJSON(http.StatusCreated, gin.H{
-				"message": "joined lobby",
-				"user":    availableID, // fill with user id from lobby
-				"lobby":   input.LobbyID,
+				"message":  "joined lobby",
+				"user_id":  availableID, // fill with user id from lobby
+				"lobby_id": input.LobbyID,
 			})
 		}
 	} else {
