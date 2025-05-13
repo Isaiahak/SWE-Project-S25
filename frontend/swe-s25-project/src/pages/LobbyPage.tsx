@@ -1,11 +1,12 @@
 import LobbyButton from "../components/LobbyButton";
 import Player from "../components/Player";
-
 import { Link } from "react-router-dom";
-
 import { ArrowBigLeft } from "lucide-react";
+import { LeaveLobby } from '../services/LobbyServices.tsx'
+import { useNavigate } from 'react-router-dom'
 
 export default function LobbyPage() {
+  const navigate = useNavigate()
   return (
     <>
       {/* Top Section */}
@@ -26,7 +27,7 @@ export default function LobbyPage() {
       {/* Bottom Section */}
       <div className="h-[40vh] w-full bg-tertiary flex justify-evenly items-center">
         <Link
-          to="/"
+          onClick={() => LeaveLobby(navigate)}
           className="bg-secondary w-20 h-10 text-black rounded-full flex justify-center items-center shadow-md hover:shadow-lg hover:shadow-indigo-400 transition-transform delay-50 duration-200 ease-in-out hover:scale-105"
         >
           <ArrowBigLeft strokeWidth={2}/>
