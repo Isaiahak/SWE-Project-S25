@@ -23,7 +23,6 @@ export default function Sidebar() {
         <Link onClick={() => setIsModalOpen(true)}>
         	<SidebarButton label="JOIN" />
         </Link>
-        <SidebarButton label="FRIENDS" />
         <JoinLobbyModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}/>
       </div>
     </nav>
