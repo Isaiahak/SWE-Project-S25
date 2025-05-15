@@ -7,11 +7,11 @@ const backend_url = import.meta.env.VITE_BACKEND_URL
 export const CreateLobby = async (game,navigate) =>{
 	try{
 		if (game != undefined){	
-			console.log('this is the value of game',game)
 			const res = await axios.post(`${backend_url}/create-lobby`,{game_id: `${game}`})
-			console.log('message after create attempt', res.data.message)
-			Cookies.set('user_id',res.data.user_id)
-			Cookies.set('lobby_id', res.data.lobby_id)
+			//Cookies.set('user_id',res.data.user_id)
+			sessionStorage.setItem('user_id',res.data.user_id)
+			//Cookies.set('lobby_id', res.data.lobby_id)
+			sessionStorage.setItem('lobby_id', res.data.lobby_id)
 			navigate('/Lobby')
 		}
 	}
@@ -23,10 +23,10 @@ export const CreateLobby = async (game,navigate) =>{
 export const JoinLobby = async (lobby,navigate) =>{
 	try{
 		if (lobby != ''){
-			console.log('this is thew value of the lobby',lobby)
 			const res = await axios.post(`${backend_url}/join-lobby`,{lobby_id: `${lobby}`})
-			console.log('message after join attempt ', res.data.message)
-			Cookies.set('user_id', res.data.user_id)
+			//Cookies.set('user_id', res.data.user_id)
+			sessionStorage.setItem('user_id', res.data.user_id)
+			sessionStorage.setItem('lobby_id',lobby)
 			navigate('/Lobby')
 		}
 	}
@@ -39,10 +39,11 @@ export const LeaveLobby = async (navigate) =>{
 	try{
 		const user_id = Cookies.get("user_id")
 		const lobby_id = Cookies.get("lobby_id")
-		const res = await axios.post(`${backend_url}/leave-lobby`,{user_id: `${user_id}`, lobby_id: `${lobby_id}`})
-		console.log('message after attempting to leave', res.data.message)
-		Cookies.remove('user_id')
-		Cookies.remove('lobby_id')
+		await axios.post(`${backend_url}/leave-lobby`,{user_id: `${user_id}`, lobby_id: `${lobby_id}`})
+		//Cookies.remove('user_id')
+		//Cookies.remove('lobby_id')
+		sessionStorage.removeItem('user_id');
+		sessionStorage.removeItem('lobby_id');
 		navigate('/')
 	}
 	catch(error){
@@ -50,5 +51,13 @@ export const LeaveLobby = async (navigate) =>{
 	}
 }
 
-
- 
+export const GetLobbies = async () => {
+	try{
+		const res =  await axios.get(`${backend_url}/lobbies`)
+		const lobbies = res.data.lobbies
+		return lobbies
+	}
+	catch(error){
+		console.error("didn't get lobbies",error)
+	}
+ }

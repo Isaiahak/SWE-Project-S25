@@ -52,13 +52,16 @@ func changeLobbyType(c *gin.Context) {
 
 // get all of the public lobbies
 func getLobbies(c *gin.Context) {
-	var lobbiesInfo = make([]Lobby, len(lobbies))
+	var LobbiesInfo []Lobby
 	for i := range lobbies {
 		if lobbies[i].LobbyType == "public" {
-			lobbiesInfo = append(lobbiesInfo, *lobbies[i])
+			LobbiesInfo = append(LobbiesInfo, *lobbies[i])
 		}
 	}
-	c.IndentedJSON(http.StatusOK, lobbiesInfo)
+	c.IndentedJSON(http.StatusOK, gin.H{
+		"lobbies": LobbiesInfo,
+	})
+
 }
 
 func closeLobby(c *gin.Context) {
