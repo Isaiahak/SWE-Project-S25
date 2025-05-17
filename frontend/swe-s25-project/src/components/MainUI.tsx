@@ -1,7 +1,7 @@
 import GameBar from "./GameBar";
 import useGameContext from "../hooks/useGameContext.tsx";
 
-function GameUI({ title }) {
+function GameUI({ title, imageUrl }) {
   return (
     <div className="flex flex-col w-full items-center justify-between">
       <h1
@@ -11,7 +11,7 @@ function GameUI({ title }) {
       </h1>
       <img
         className="h-120 w-[65vw] bg-secondary rounded-2xl p-4"
-        src="globe.svg"
+        src={imageUrl}
         alt="placeholder"
       />
       <GameBar />
@@ -22,15 +22,15 @@ function GameUI({ title }) {
 export default function MainUI() {
   const { game } = useGameContext()
 
-  const gameProperties: Record<number, { title: string }> = {
-    1: { title: "Game of Nodes" },
-    2: { title: "Risky Regression" },
-    3: { title: "Gradient Descent Dash" },
-    4: { title: "KNN Katastrophe" },
-    5: { title: "Random Forest" },
+  const gameProperties: Record<number, { title: string, imageUrl: string }> = {
+    1: { title: "Game of Nodes", imageUrl: "globe.svg" },
+    2: { title: "Risky Regression", imageUrl: "mind_map.svg" },
+    3: { title: "Gradient Descent Dash", imageUrl: "vcs.svg" },
+    4: { title: "KNN Katastrophe", imageUrl: "space.svg" },
+    5: { title: "Random Forest", imageUrl: "forest.svg" },
   };
 
   const selectedGame = gameProperties[game]
 
-  return selectedGame ? <GameUI title={selectedGame.title} /> : null
+  return selectedGame ? <GameUI title={selectedGame.title} imageUrl={selectedGame.imageUrl} /> : null
 }
