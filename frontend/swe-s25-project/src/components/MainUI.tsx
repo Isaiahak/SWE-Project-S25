@@ -1,6 +1,6 @@
 import GameBar from "./GameBar";
 
-export default function MainUI() {
+function GameOneUI() {
   return (
     <div className="flex flex-col w-full items-center justify-between">
       <h1 className={`border-black text-secondary text-[6rem] font-[MuseoModerno] font-bold text-shadow-md`}>Game of Nodes</h1>
@@ -8,4 +8,8 @@ export default function MainUI() {
       <GameBar/>
     </div>
   );
+}
+
+export default function MainUI() {
+  return <GameOneUI/>;
 }
