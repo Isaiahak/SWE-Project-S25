@@ -1,15 +1,29 @@
-import useGameContext from '../hooks/useGameContext.tsx'
+import useGameContext from "../hooks/useGameContext.tsx";
+import { motion } from "motion/react";
 
 export default function MiniGame({ icon, game }) {
-  const {setGame} = useGameContext()
-  const handleClick= () => {
-    setGame(game)
-  }
+  const { game: selectedGame, setGame } = useGameContext();
+
+  const handleClick = () => {
+    setGame(game);
+  };
+
+  const isSelected = selectedGame === game;
+
   return (
-    <img 
+    <motion.img
       onClick={handleClick}
       src={icon}
-      className="w-32 h-32 m-2 bg-white shadow-md shadow-tertiary rounded-2xl hover:cursor-pointer hover:shadow-lg hover:shadow-indigo-400 transition-transform delay-50 duration-200 ease-in-out hover:scale-110"
-    ></img>
+      className={`w-32 h-32 m-2 bg-white rounded-2xl hover:cursor-pointer transition-shadow
+        ${
+          isSelected
+            ? "shadow-xl shadow-indigo-500"
+            : "shadow-md shadow-tertiary"
+        }
+      `}
+      transition={{ type: "spring", bounce: 0.7 }}
+      whileHover={{ scale: isSelected ? 1.0 : 1.1 }}
+      whileTap={{ scale: 0.95 }}
+    />
   );
 }

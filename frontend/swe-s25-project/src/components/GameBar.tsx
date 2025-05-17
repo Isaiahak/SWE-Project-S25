@@ -1,13 +1,22 @@
 import MiniGame from "./MiniGame";
+import { useContext } from "react";
+import { gameContext } from "../hooks/useGameContext.tsx";
 
 export default function GameBar() {
-    return (
-        <div className="m-6 p-4 flex items-center rounded-2xl bg-light-blue-100 h-36 inset-shadow-sm">
-            <MiniGame icon="startled.svg" game={1}/>
-            <MiniGame icon="race.svg" game={2}/>
-            <MiniGame icon="ufo.svg" game={3}/>
-            <MiniGame icon="unicorn.svg" game={4}/>
-            <MiniGame icon="thinking.svg" game={5}/>
-        </div>
-    );
+
+  const games = [
+    { icon: "startled.svg", id: 1 },
+    { icon: "race.svg", id: 2 },
+    { icon: "ufo.svg", id: 3 },
+    { icon: "unicorn.svg", id: 4 },
+    { icon: "thinking.svg", id: 5 },
+  ];
+
+  return (
+    <div className="m-6 p-4 flex items-center rounded-2xl bg-light-blue-100 h-38 inset-shadow-sm">
+      {games.map(({ icon, id }) => (
+        <MiniGame icon={icon} game={id} />
+      ))}
+    </div>
+  );
 }

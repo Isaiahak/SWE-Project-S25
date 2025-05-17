@@ -2,7 +2,7 @@ import {useState} from 'react'
 import {gameContext} from './useGameContext.tsx'
 
 function GameProvider({children}){
-	const [game, setGame] = useState(null)
+	const [game, setGame] = useState(1)
 
 	return(
 		<gameContext.Provider value={{game, setGame}}>
