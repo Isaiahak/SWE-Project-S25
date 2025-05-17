@@ -1,5 +1,4 @@
 import axios from 'axios'
-import Cookies from 'js-cookie'
 
 const backend_url = import.meta.env.VITE_BACKEND_URL
 
@@ -34,8 +33,8 @@ export const JoinLobby = async (lobby,navigate) =>{
 
 export const LeaveLobby = async (navigate) =>{
 	try{
-		const user_id = Cookies.get("user_id")
-		const lobby_id = Cookies.get("lobby_id")
+		const user_id = sessionStorage.getItem("user_id")
+		const lobby_id = sessionStorage.getItem("lobby_id")
 		await axios.post(`${backend_url}/leave-lobby`,{user_id: `${user_id}`, lobby_id: `${lobby_id}`})
 		sessionStorage.removeItem('user_id');
 		sessionStorage.removeItem('lobby_id');
@@ -73,3 +72,6 @@ export const GetRandomLobby = async (navigate) => {
 		console.error("couldn't find a random lobby",error)
 	}
 }
+
+
+
