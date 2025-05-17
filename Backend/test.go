@@ -6,6 +6,9 @@ import (
 	"github.com/google/uuid"
 	"log"
 	"net/http"
+	"time"
+	"math/rand"
+	"fmt"
 )
 
 // struct for the lobby objects the server will contain a list of users
@@ -15,7 +18,7 @@ import (
 type Lobby struct {
 	LobbyID           string    `json:id`
 	GameID            string    `json:game_id`
-	PlayerCount       int32     `json:player_count`
+	PlayerCount       int     `json:player_count`
 	LobbyType         string    `json:lobby_type`
 	PreferredLanguage string    `json:language`
 	ChatID            string    `json:chat_id`
@@ -23,10 +26,26 @@ type Lobby struct {
 	HostID            *string   `json:host_id`
 	Members           []*string `json:members`
 	UsedIDs           []bool    `json:usedIDs`
+	UserNicknames []*string `json:userNicknames`
+	UserIcons []int `json:userIcons`
 }
 
 // splice of lobby structs containing initial lobbies
 var lobbies = make(map[string]*Lobby)
+
+// random nickname generator
+func generateRandomNickname() string {
+	adjectives := []string{"Swift", "Silent", "Clever", "Lucky", "Brave", "Sneaky", "Wild", "Funky"}
+	nouns := []string{"Tiger", "Falcon", "Wizard", "Panda", "Ninja", "Pirate", "Knight", "Fox"}
+
+	rand.Seed(time.Now().UnixNano())
+
+	adj := adjectives[rand.Intn(len(adjectives))]
+	noun := nouns[rand.Intn(len(nouns))]
+	num := rand.Intn(1000)
+
+	return fmt.Sprintf("%s%s%d", adj, noun, num)
+}
 
 // changes the lobby type from public to private and vice versa
 func changeLobbyType(c *gin.Context) {
@@ -224,10 +243,15 @@ func createLobby(c *gin.Context) {
 	// and creates a slice of bools which represent which userids are being used
 	UsedIDs_list := make([]bool, 0, 8)
 	Members_list := make([]*string, 0, 8)
+	UserNickname := make([]*string,0,8)
+	UserIcons := make([]int,0,8)
 	for i := 0; i < 8; i++ {
 		userID := uuid.New().String()
 		Members_list = append(Members_list, &userID)
 		UsedIDs_list = append(UsedIDs_list, false)
+		nickname := generateRandomNickname()
+		UserNickname = append(UserNickname, &nickname)
+		UserIcons =append(UserIcons,i)
 	}
 
 	newLobby := Lobby{
@@ -241,6 +265,8 @@ func createLobby(c *gin.Context) {
 		HostID:            Members_list[0],
 		Members:           Members_list,
 		UsedIDs:           UsedIDs_list,
+		UserNicknames: UserNickname,
+		UserIcons: UserIcons,
 	}
 	// after we set the host to the first id we set the first usedid bool to true
 	UsedIDs_list[0] = true
