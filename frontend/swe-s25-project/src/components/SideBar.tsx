@@ -13,7 +13,7 @@ export default function Sidebar() {
     <nav className="h-screen w-60 flex flex-col justify-between bg-sidebar-primary shadow-lg">
       <div className="flex flex-col">
         <h1 className="text-center font-[Bebas Neue] font-bold text-[1.75rem]">
-          Aken Studios
+          AKEP GAMES
         </h1>
         <Link onClick={() => GetRandomLobby(navigate)}>
           <SidebarButton label="PLAY" /> 
