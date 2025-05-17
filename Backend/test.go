@@ -114,7 +114,7 @@ func leaveLobby(c *gin.Context) {
 				lobbies[input.LobbyID].UsedIDs[i] = false
 			}
 		}
-
+		lobbies[input.LobbyID].PlayerCount = lobbies[input.LobbyID].PlayerCount - 1
 		c.IndentedJSON(http.StatusOK, gin.H{
 			"message": "lefted lobby",
 			"lobby":   input.LobbyID,
@@ -153,6 +153,7 @@ func joinLobby(c *gin.Context) {
 				"message": "lobby full",
 			})
 		} else {
+			lobbies[input.LobbyID].PlayerCount = lobbies[input.LobbyID].PlayerCount + 1
 			c.IndentedJSON(http.StatusCreated, gin.H{
 				"message":  "joined lobby",
 				"user_id":  availableID, // fill with user id from lobby
@@ -165,6 +166,42 @@ func joinLobby(c *gin.Context) {
 		})
 	}
 
+}
+
+func JoinRandomLobby(c *gin.Context) {
+	if len(lobbies) == 0 {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"message": "no current game lobbies",
+		})
+	} else {
+		var RandomLobby Lobby
+		RandomLobby.LobbyID = "empty"
+		for i := range lobbies {
+			if lobbies[i].PlayerCount != 8 {
+				RandomLobby = *lobbies[i]
+				break
+			}
+		}
+		if RandomLobby.LobbyID == "empty" {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{
+				"message": "All current lobbies are full",
+			})
+		} else {
+			lobbies[RandomLobby.LobbyID].PlayerCount = lobbies[RandomLobby.LobbyID].PlayerCount + 1
+			var availableID string
+			for i := 0; i < 8; i++ {
+				if lobbies[RandomLobby.LobbyID].UsedIDs[i] == false {
+					availableID = *lobbies[RandomLobby.LobbyID].Members[i]
+					lobbies[RandomLobby.LobbyID].UsedIDs[i] = true
+				}
+			}
+			c.IndentedJSON(http.StatusOK, gin.H{
+				"lobby_id": RandomLobby.LobbyID,
+				"user_id":  availableID,
+			})
+		}
+
+	}
 }
 
 // creates a public lobby and creates a user if required
@@ -224,6 +261,7 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.Default())
 	router.GET("/lobbies", getLobbies)
+	router.GET("//join-random", JoinRandomLobby)
 	router.POST("/create-lobby", createLobby)
 	router.POST("/join-lobby", joinLobby)
 	router.POST("/close-lobby", closeLobby)

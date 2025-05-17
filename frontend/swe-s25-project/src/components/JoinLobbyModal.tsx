@@ -24,7 +24,7 @@ export default function JoinLobbyModal({ isOpen, onClose }) {
 
   const Lobbies = () =>{
     return(
-    <div className="flex flex-wrap w-full gap-6 items-center justify-center">
+    <div className="flex flex-wrap w-full gap-6 items-center justify-flex-start">
       {Array.isArray(currentLobbies) && currentLobbies.map(lobby => (
           <LobbyIcon onClick={() => JoinLobby(lobby.LobbyID, navigate)} key={lobby.LobbyID} gameType={gameType[lobby.GameID]}  hostName={lobby.HostID} currentPlayers={lobby.PlayerCount} className="w-1/2 p-2"/>
         ))}
@@ -53,7 +53,7 @@ export default function JoinLobbyModal({ isOpen, onClose }) {
               value={lobbyID}
               onChange={(e) => setlobbyID(e.target.value)}
               placeholder="Enter Lobby Code"
-              className="w-full p-3 text-black rounded-lg outline-none border border-secondary placeholder-gray-600 focus:ring-2 focus:ring-hover"
+              className="w-full p-3 text-black rounded-lg outline-none border border-primary placeholder-gray-600 focus:ring-2 focus:ring-hover"
             />
             <button
               className="py-3 px-5 bg-sidebar-primary text-white rounded-xl font-semibold shadow-md hover:bg-hover hover:cursor-pointer transition duration-200"

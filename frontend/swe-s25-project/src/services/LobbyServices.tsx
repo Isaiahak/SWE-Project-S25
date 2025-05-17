@@ -8,9 +8,7 @@ export const CreateLobby = async (game,navigate) =>{
 	try{
 		if (game != undefined){	
 			const res = await axios.post(`${backend_url}/create-lobby`,{game_id: `${game}`})
-			//Cookies.set('user_id',res.data.user_id)
 			sessionStorage.setItem('user_id',res.data.user_id)
-			//Cookies.set('lobby_id', res.data.lobby_id)
 			sessionStorage.setItem('lobby_id', res.data.lobby_id)
 			navigate('/Lobby')
 		}
@@ -24,7 +22,6 @@ export const JoinLobby = async (lobby,navigate) =>{
 	try{
 		if (lobby != ''){
 			const res = await axios.post(`${backend_url}/join-lobby`,{lobby_id: `${lobby}`})
-			//Cookies.set('user_id', res.data.user_id)
 			sessionStorage.setItem('user_id', res.data.user_id)
 			sessionStorage.setItem('lobby_id',lobby)
 			navigate('/Lobby')
@@ -40,8 +37,6 @@ export const LeaveLobby = async (navigate) =>{
 		const user_id = Cookies.get("user_id")
 		const lobby_id = Cookies.get("lobby_id")
 		await axios.post(`${backend_url}/leave-lobby`,{user_id: `${user_id}`, lobby_id: `${lobby_id}`})
-		//Cookies.remove('user_id')
-		//Cookies.remove('lobby_id')
 		sessionStorage.removeItem('user_id');
 		sessionStorage.removeItem('lobby_id');
 		navigate('/')
@@ -61,3 +56,20 @@ export const GetLobbies = async () => {
 		console.error("didn't get lobbies",error)
 	}
  }
+
+export const GetRandomLobby = async (navigate) => {
+	try{
+		const res = await axios.get(`${backend_url}/join-random`)
+		if (res.data.user_id != ""){
+			console.log("we have some lobby")
+			sessionStorage.setItem('user_id', res.data.user_id)
+			sessionStorage.setItem('lobby_id',res.data.lobby_id)
+			navigate('/Lobby')			
+		}else{
+			console.log("No current lobbies")
+		}
+	}
+	catch(error){
+		console.error("couldn't find a random lobby",error)
+	}
+}
