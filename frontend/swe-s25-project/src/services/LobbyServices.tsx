@@ -35,6 +35,15 @@ export const LeaveLobby = async (navigate) =>{
 	try{
 		const user_id = sessionStorage.getItem("user_id")
 		const lobby_id = sessionStorage.getItem("lobby_id")
+
+		if (!user_id || !lobby_id) {
+			console.error("Missing user_id or lobby_id in session storage");
+			sessionStorage.removeItem('user_id');
+			sessionStorage.removeItem('lobby_id');
+			navigate('/');
+			return;
+		}
+
 		await axios.post(`${backend_url}/leave-lobby`,{user_id: `${user_id}`, lobby_id: `${lobby_id}`})
 		sessionStorage.removeItem('user_id');
 		sessionStorage.removeItem('lobby_id');
@@ -73,5 +82,62 @@ export const GetRandomLobby = async (navigate) => {
 	}
 }
 
+export const GetLobbyInfo = async () => {
+	try{
+		if (!lobby_id) {
+			throw new Error("No lobby_id in session storage");
+		}
+		const res = await axios.get(`${backend_url}/get-lobby-info`)
+		return res.data.lobby
+	}
+	catch(error){
+		console.error("couldn't get lobby information",error)
+	}
+}
 
+export const ChangeIcon = async (userIcon) => {
+	try{
+		const user_id = sessionStorage.getItem('user_id');
+		const lobby_id = sessionStorage.getItem('lobby_id');
+		if (!user_id || !lobby_id) {
+			throw new Error("Missing user_id or lobby_id in session storage");
+		}
+		
+		const res = await axios.post(`${backend_url}/change-icon`, user_id, lobby_id,userIcon)
+		
+		console.log(res.data.result)
+	}	
+	catch(error){
+		console.error("couldn't get lobby information",error)
+	}
+}
 
+export const ChangeNickname = async (userNickname) => {
+	try{
+		const user_id = sessionStorage.getItem('user_id')
+		const lobby_id = sessionStorage.getItem('lobby_id')
+		if (!user_id || !lobby_id) {
+			throw new Error("Missing user_id or lobby_id in session storage")
+		}
+		const res = await axios.post(`${backend_url}/change-nickname`, user_id, lobby_id, userNickname)
+		console.log(res.data.result)
+
+	}
+	catch(error){
+		console.error("couldn't get lobby information",error)
+	}
+}
+
+export const ChangeLobbyType = async () => {
+	try{
+		const lobby_id = sessionStorage.getItem('lobby_id')
+		if (!lobby_id) {
+			throw new Error("No lobby_id in session storage")
+		}
+		const res = await axios.post(`${backend_url}/change-lobby-type`,lobby_id)
+		console.log(res.data.message)
+	}
+	catch(error){
+		console.error("couldn't change lobby type",error)
+	}
+}
