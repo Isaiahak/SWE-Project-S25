@@ -7,8 +7,6 @@ interface Lobby {
   GameID: string;
   PlayerCount: number;
   LobbyType: string;
-  PreferredLanguage: string;
-  ChatID: string;
   Difficulty: string;
   HostID: string;
   Members: string[];

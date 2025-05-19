@@ -33,6 +33,19 @@ type Lobby struct {
 	mutex             sync.RWMutex
 }
 
+type LobbyData struct{
+	LobbyID string
+	GameID string
+	PlayerCount int
+	LobbyType string
+	Difficulty string
+	HostID *string
+	Members []*string
+	UsedIDs []bool
+	UserNicknames []*string
+	UserIcons []int
+}
+
 // splice of lobby structs containing initial lobbies
 type LobbyManager struct {
 	lobbies map[string]*Lobby
@@ -217,6 +230,7 @@ func joinLobby(c *gin.Context) {
 	lobbyManager.mutex.RLock()
 	lobby, ok := lobbyManager.lobbies[input.LobbyID]
 	lobbyManager.mutex.RUnlock()
+
 	if ok {
 		var availableID string
 		var full bool
@@ -370,8 +384,21 @@ func getLobbyInfo(c *gin.Context) {
 	lobby := lobbyManager.lobbies[input.LobbyID]
 	lobbyManager.mutex.RUnlock()
 
+	LobbyData := LobbyData{
+		LobbyID: lobby.LobbyID,
+		GameID: lobby.GameID,
+		PlayerCount: lobby.PlayerCount,
+		LobbyType: lobby.LobbyType,
+		Difficulty: lobby.Difficulty,      
+		HostID: lobby.HostID,          
+		Members: lobby.Members,          
+		UsedIDs: lobby.UsedIDs,           
+		UserNicknames: lobby.UserNicknames,    
+		UserIcons: lobby.UserIcons,
+	}
+
 	c.IndentedJSON(http.StatusOK, gin.H{
-		"lobby": lobby,
+		"lobby": LobbyData,
 	})
 }
 
@@ -513,8 +540,21 @@ func broadcastLobbyUpdate(lobbyID string) {
 	lobby.mutex.RLock()
 	defer lobby.mutex.RUnlock()
 
+	LobbyData := LobbyData {
+		LobbyID: lobby.LobbyID,
+		GameID: lobby.GameID,
+		PlayerCount: lobby.PlayerCount,
+		LobbyType: lobby.LobbyType,
+		Difficulty: lobby.Difficulty,      
+		HostID: lobby.HostID,          
+		Members: lobby.Members,          
+		UsedIDs: lobby.UsedIDs,           
+		UserNicknames: lobby.UserNicknames,    
+		UserIcons: lobby.UserIcons,
+	}
+
 	lobbyData := gin.H{
-		"lobby": lobby,
+		"lobby": LobbyData,
 	}
 
 	for conn := range lobby.ConnectedUsers {
@@ -526,8 +566,21 @@ func sendLobbyState(conn *websocket.Conn, lobby *Lobby) {
 	lobby.mutex.RLock()
 	defer lobby.mutex.RUnlock()
 
+	LobbyData := LobbyData{
+		LobbyID: lobby.LobbyID,
+		GameID: lobby.GameID,
+		PlayerCount: lobby.PlayerCount,
+		LobbyType: lobby.LobbyType,
+		Difficulty: lobby.Difficulty,      
+		HostID: lobby.HostID,          
+		Members: lobby.Members,          
+		UsedIDs: lobby.UsedIDs,           
+		UserNicknames: lobby.UserNicknames,    
+		UserIcons: lobby.UserIcons,
+	}
+
 	lobbyData := gin.H{
-		"lobby": lobby,
+		"lobby": LobbyData,      
 	}
 
 	conn.WriteJSON(lobbyData)

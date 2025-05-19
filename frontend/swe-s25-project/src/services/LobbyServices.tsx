@@ -37,10 +37,10 @@ export const LeaveLobby = async (navigate) =>{
 		const lobby_id = sessionStorage.getItem("lobby_id")
 
 		if (!user_id || !lobby_id) {
-			console.error("Missing user_id or lobby_id in session storage");
-			sessionStorage.removeItem('user_id');
-			sessionStorage.removeItem('lobby_id');
-			navigate('/');
+			console.error("Missing user_id or lobby_id in session storage")
+			sessionStorage.removeItem('user_id')
+			sessionStorage.removeItem('lobby_id')
+			navigate('/')
 			return;
 		}
 
