@@ -4,20 +4,29 @@ import Player from '../components/Player'
 import { Link } from 'react-router-dom'
 import { ArrowBigLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { ChangeNickname, ChangeIcon, LeaveLobby, GetLobbyInfo} from '../services/LobbyServices'
+import ChangeNicknameModal from '../components/ChangeNicknameModal'
+import ChangeIconModal from '../components/ChangeIconModal'
+import { LeaveLobby, StartGame } from '../services/LobbyServices'
 import { useLobbyWebSocket, disconnectFromLobby } from '../services/WebSocketService'
 
 export default function LobbyPage() {
   const navigate = useNavigate()
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [initialLobbyData, setInitialLobbyData] = useState(null)
+  const [changeIcon, setChangeIcon] = useState(false)
+  const [changeNickname, setChangeNickname] = useState(false)
   const lobbyId = sessionStorage.getItem('lobby_id')
   const userId = sessionStorage.getItem('user_id') 
-
   const { lobbyData, isConnected } = useLobbyWebSocket(lobbyId || '', userId || '')
-  
-  const currentLobbyData = lobbyData || initialLobbyData
+  const avatars = [
+    '/icons/anaconda.png',
+    '/icons/bear.png',
+    '/icons/blackbird.png',
+    '/icons/cow.png',
+    '/icons/ganesha.png',
+    '/icons/jaguar.png',
+    '/icons/panda-bear.png',
+    '/icons/turtle.png'
+  ]
 
   const handleLeaveLobby = async () => {
     try {
@@ -29,39 +38,29 @@ export default function LobbyPage() {
     }
   }
 
-  useEffect(() => {
-    const fetchInitialLobbyInfo = async () => {
-      try {
-        if (!lobbyId || !userId) {
-          console.log("no lobby and user id")
-          navigate('/')
-          return
-        }
-        
-        const initialLobbyData = await GetLobbyInfo()
-        setInitialData(initialLobbyData)
-        setLoading(false)
-      } catch (error) {
-        console.error("Error fetching lobby info:", error)
-        setError("Failed to load lobby information")
-        setLoading(false)
-      }
-    }
-    
-    fetchInitialLobbyInfo();
-    
-    return () => {}
-  }, [lobbyId, userId, navigate])
+  const handleChangeIcon = () => {
+    setChangeNickname(false)
+    setChangeIcon(true)
+  }
 
-  if (loading && !currentLobbyData) {
-      return <div>Loading lobby information...</div>
+  const handleChangeNickname = () => {
+    setChangeIcon(false)
+    setChangeNickname(true)
+  }
+
+  useEffect(() => {
+    return () => {}
+  }, [isConnected])
+
+  if (!isConnected) {
+      return <div className="items-center font-[3rem]">Loading lobby information...</div>
     }
 
   if (error) {
     return <div>Error: {error}</div>
   }
 
-  if (!currentingLobbyData){
+  if (lobbyData == undefined){
     return <div>Connecting to lobby</div>
   }
 
@@ -69,12 +68,12 @@ export default function LobbyPage() {
     <div>
       {/* Top Section */}
       <div className="p-4 gap-12 h-[60vh] w-full bg-primary flex flex-row wrap">
-      {currentLobbyData.Members && currentLobbyData.Members.map((memberId, index) => {
-        if (currentLobbyData.UsedIDs[index]){
+      {lobbyData.Members && lobbyData.Members.map((memberId, index) => {
+        if (lobbyData.UsedIDs[index]){
           const isCurrentUser = memberId === userId
-          const isHost = memberId === currentLobbyData.HostID
+          const isHost = memberId === lobbyData.HostID
           return(
-            <Player key={memberId} isHost={isHost} isCurrentUser={isCurrentUser} avatar={currentLobbyData.UserIcons[index]} nickname={currentLobbyData.UserNicknames[index]} />
+            <Player key={memberId} isHost={isHost} isCurrentUser={isCurrentUser} avatar={avatars[lobbyData.UserIcons[index]]} nickname={lobbyData.UserNicknames[index]} />
           )
         }
         return null
@@ -93,7 +92,8 @@ export default function LobbyPage() {
           label="CHANGE NICKNAME"
           height="h-20"
           width="w-50"
-          fontSize="text-[1rem]"   
+          fontSize="text-[1rem]"
+          onClick={() => handleChangeNickname()} 
         />
         {/* I need to create module for changing nickname */}
         <LobbyButton
@@ -101,6 +101,7 @@ export default function LobbyPage() {
           height="h-20"
           width="w-50"
           fontSize="text-[1rem]"
+          onClick={() => handleChangeIcon()}
         />
         {/* I need to create a module for changing avatar */}
         <LobbyButton
@@ -108,7 +109,10 @@ export default function LobbyPage() {
           height="h-40"
           width="w-100"
           fontSize="text-[5rem]"
+          onClick={() => StartGame()}
         />
+        <ChangeIconModal isOpen={changeIcon} onClose={() => setChangeIcon(false)}/>
+        <ChangeNicknameModal isOpen={changeNickname} onClose={() => setChangeNickname(false)}/>
       </div>
       </div>
   )

@@ -3,7 +3,7 @@ export default function LobbyButton({
   height = "h-20",
   width = "w-80",
   fontSize = "text-[2rem]",
-  onClick = onClick
+  onClick
 }) {
   return (
     <button 

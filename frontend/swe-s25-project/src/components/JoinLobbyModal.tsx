@@ -1,25 +1,25 @@
-import { React, useState, useEffect } from "react";
-import { JoinLobby, GetLobbies } from "../services/LobbyServices.tsx";
-import { useNavigate } from "react-router-dom";
-import LobbyIcon from "./LobbyIcon.tsx";
+import { React, useState, useEffect } from 'react'
+import { JoinLobby, GetLobbies } from '../services/LobbyServices.tsx'
+import { useNavigate } from 'react-router-dom'
+import LobbyIcon from './LobbyIcon.tsx'
 
 export default function JoinLobbyModal({ isOpen, onClose }) {
-  const navigate = useNavigate();
-  const [lobbyID, setlobbyID] = useState("");
-  const [currentLobbies, setCurrentLobbies] = useState([]);
+  const navigate = useNavigate()
+  const [lobbyID, setlobbyID] = useState("")
+  const [currentLobbies, setCurrentLobbies] = useState([])
   const gameType = {1:"game 1",2:"game 2",3:"game 3",4:"game 4",5:"game 5"}
 
   useEffect(()=>{
     const fetchLobbies = async () => {
       try {
-        const lobbies = await GetLobbies();
-        setCurrentLobbies(lobbies);
+        const lobbies = await GetLobbies()
+        setCurrentLobbies(lobbies)
       } catch (error) {
-        console.error("Error fetching lobbies:", error);
+        console.error("Error fetching lobbies:", error)
       }
     };
     
-  fetchLobbies();
+  fetchLobbies()
   }, [])
 
   const Lobbies = () =>{
@@ -33,7 +33,7 @@ export default function JoinLobbyModal({ isOpen, onClose }) {
   }
 
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
   return (
     <>
       {/* Overlay BG */}

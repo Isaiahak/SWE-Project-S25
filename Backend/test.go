@@ -33,17 +33,17 @@ type Lobby struct {
 	mutex             sync.RWMutex
 }
 
-type LobbyData struct{
-	LobbyID string
-	GameID string
-	PlayerCount int
-	LobbyType string
-	Difficulty string
-	HostID *string
-	Members []*string
-	UsedIDs []bool
+type LobbyData struct {
+	LobbyID       string
+	GameID        string
+	PlayerCount   int
+	LobbyType     string
+	Difficulty    string
+	HostID        *string
+	Members       []*string
+	UsedIDs       []bool
 	UserNicknames []*string
-	UserIcons []int
+	UserIcons     []int
 }
 
 // splice of lobby structs containing initial lobbies
@@ -115,11 +115,23 @@ func changeLobbyType(c *gin.Context) {
 
 // get all of the public lobbies
 func getLobbies(c *gin.Context) {
-	var LobbiesInfo []Lobby
+	var LobbiesInfo []LobbyData
 	lobbyManager.mutex.RLock()
 	for i := range lobbyManager.lobbies {
 		if lobbyManager.lobbies[i].LobbyType == "public" {
-			LobbiesInfo = append(LobbiesInfo, *lobbyManager.lobbies[i])
+			LobbyData := LobbyData{
+				LobbyID:       lobbyManager.lobbies[i].LobbyID,
+				GameID:        lobbyManager.lobbies[i].GameID,
+				PlayerCount:   lobbyManager.lobbies[i].PlayerCount,
+				LobbyType:     lobbyManager.lobbies[i].LobbyType,
+				Difficulty:    lobbyManager.lobbies[i].Difficulty,
+				HostID:        lobbyManager.lobbies[i].HostID,
+				Members:       lobbyManager.lobbies[i].Members,
+				UsedIDs:       lobbyManager.lobbies[i].UsedIDs,
+				UserNicknames: lobbyManager.lobbies[i].UserNicknames,
+				UserIcons:     lobbyManager.lobbies[i].UserIcons,
+			}
+			LobbiesInfo = append(LobbiesInfo, LobbyData)
 		}
 	}
 	lobbyManager.mutex.RUnlock()
@@ -146,6 +158,13 @@ func closeLobby(c *gin.Context) {
 	lobbyManager.mutex.RUnlock()
 
 	if input.UserID == *lobby.HostID {
+		lobby.mutex.Lock()
+		for conn := range lobby.ConnectedUsers {
+			conn.Close()
+			delete(lobby.ConnectedUsers, conn)
+		}
+		lobby.mutex.Unlock()
+
 		lobbyManager.mutex.Lock()
 		delete(lobbyManager.lobbies, input.LobbyID)
 		lobbyManager.mutex.Unlock()
@@ -181,6 +200,13 @@ func leaveLobby(c *gin.Context) {
 	if input.UserID == *lobby.HostID {
 		lobby.mutex.RUnlock()
 
+		lobby.mutex.Lock()
+		for conn := range lobby.ConnectedUsers {
+			conn.Close()
+			delete(lobby.ConnectedUsers, conn)
+		}
+		lobby.mutex.Unlock()
+
 		lobbyManager.mutex.Lock()
 		delete(lobbyManager.lobbies, input.LobbyID)
 		lobbyManager.mutex.Unlock()
@@ -199,6 +225,7 @@ func leaveLobby(c *gin.Context) {
 				newNickname := generateRandomNickname()
 				lobby.UserNicknames[i] = &newNickname
 				lobby.UserIcons[i] = i
+
 				lobby.mutex.Unlock()
 			}
 		}
@@ -210,7 +237,6 @@ func leaveLobby(c *gin.Context) {
 
 		c.IndentedJSON(http.StatusOK, gin.H{
 			"message": "lefted lobby",
-			"lobby":   input.LobbyID,
 		})
 	}
 }
@@ -239,6 +265,7 @@ func joinLobby(c *gin.Context) {
 				availableID = *lobby.Members[i]
 				lobby.UsedIDs[i] = true
 				full = false
+				break
 			} else {
 				full = true
 			}
@@ -385,16 +412,16 @@ func getLobbyInfo(c *gin.Context) {
 	lobbyManager.mutex.RUnlock()
 
 	LobbyData := LobbyData{
-		LobbyID: lobby.LobbyID,
-		GameID: lobby.GameID,
-		PlayerCount: lobby.PlayerCount,
-		LobbyType: lobby.LobbyType,
-		Difficulty: lobby.Difficulty,      
-		HostID: lobby.HostID,          
-		Members: lobby.Members,          
-		UsedIDs: lobby.UsedIDs,           
-		UserNicknames: lobby.UserNicknames,    
-		UserIcons: lobby.UserIcons,
+		LobbyID:       lobby.LobbyID,
+		GameID:        lobby.GameID,
+		PlayerCount:   lobby.PlayerCount,
+		LobbyType:     lobby.LobbyType,
+		Difficulty:    lobby.Difficulty,
+		HostID:        lobby.HostID,
+		Members:       lobby.Members,
+		UsedIDs:       lobby.UsedIDs,
+		UserNicknames: lobby.UserNicknames,
+		UserIcons:     lobby.UserIcons,
 	}
 
 	c.IndentedJSON(http.StatusOK, gin.H{
@@ -440,7 +467,7 @@ func changeUserIcon(c *gin.Context) {
 	var input struct {
 		LobbyID  string `json:"lobby_id" binding:"required"`
 		UserID   string `json:"user_id" binding:"required"`
-		UserIcon int    `json:"user_nickname" binding:"required"`
+		UserIcon int    `json:"user_icon" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -540,17 +567,17 @@ func broadcastLobbyUpdate(lobbyID string) {
 	lobby.mutex.RLock()
 	defer lobby.mutex.RUnlock()
 
-	LobbyData := LobbyData {
-		LobbyID: lobby.LobbyID,
-		GameID: lobby.GameID,
-		PlayerCount: lobby.PlayerCount,
-		LobbyType: lobby.LobbyType,
-		Difficulty: lobby.Difficulty,      
-		HostID: lobby.HostID,          
-		Members: lobby.Members,          
-		UsedIDs: lobby.UsedIDs,           
-		UserNicknames: lobby.UserNicknames,    
-		UserIcons: lobby.UserIcons,
+	LobbyData := LobbyData{
+		LobbyID:       lobby.LobbyID,
+		GameID:        lobby.GameID,
+		PlayerCount:   lobby.PlayerCount,
+		LobbyType:     lobby.LobbyType,
+		Difficulty:    lobby.Difficulty,
+		HostID:        lobby.HostID,
+		Members:       lobby.Members,
+		UsedIDs:       lobby.UsedIDs,
+		UserNicknames: lobby.UserNicknames,
+		UserIcons:     lobby.UserIcons,
 	}
 
 	lobbyData := gin.H{
@@ -567,20 +594,20 @@ func sendLobbyState(conn *websocket.Conn, lobby *Lobby) {
 	defer lobby.mutex.RUnlock()
 
 	LobbyData := LobbyData{
-		LobbyID: lobby.LobbyID,
-		GameID: lobby.GameID,
-		PlayerCount: lobby.PlayerCount,
-		LobbyType: lobby.LobbyType,
-		Difficulty: lobby.Difficulty,      
-		HostID: lobby.HostID,          
-		Members: lobby.Members,          
-		UsedIDs: lobby.UsedIDs,           
-		UserNicknames: lobby.UserNicknames,    
-		UserIcons: lobby.UserIcons,
+		LobbyID:       lobby.LobbyID,
+		GameID:        lobby.GameID,
+		PlayerCount:   lobby.PlayerCount,
+		LobbyType:     lobby.LobbyType,
+		Difficulty:    lobby.Difficulty,
+		HostID:        lobby.HostID,
+		Members:       lobby.Members,
+		UsedIDs:       lobby.UsedIDs,
+		UserNicknames: lobby.UserNicknames,
+		UserIcons:     lobby.UserIcons,
 	}
 
 	lobbyData := gin.H{
-		"lobby": LobbyData,      
+		"lobby": LobbyData,
 	}
 
 	conn.WriteJSON(lobbyData)
@@ -599,8 +626,7 @@ func main() {
 	router.POST("/close-lobby", closeLobby)
 	router.POST("/change-lobby-type", changeLobbyType)
 	router.POST("/leave-lobby", leaveLobby)
-
-	router.GET("/ws/lobby/:lobbyID", webSocketHandler)
+	router.GET("/ws/lobby/:lobby_id", webSocketHandler)
 
 	router.Run("localhost:8080")
 }
