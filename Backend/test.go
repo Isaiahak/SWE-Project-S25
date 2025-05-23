@@ -6,17 +6,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"log"
 	"math/rand"
 	"net/http"
 	"sync"
 	"time"
-	"log"
 )
 
 // struct for the lobby objects the server will contain a list of users
 // i need to worry about this lobby implementation becasue if for some reason a user removes
 // their userid from the cookies there slot in the lobby will forever be filled which can lead to complications
-
 
 type Lobby struct {
 	LobbyID           string                   `json:id`
@@ -55,7 +54,7 @@ type LobbyManager struct {
 }
 
 type WebSocketInfo struct {
-	Connection *websocket.Conn
+	Connection  *websocket.Conn
 	IsConnected bool
 }
 
@@ -145,7 +144,7 @@ func getLobbies(c *gin.Context) {
 	lobbyManager.mutex.RUnlock()
 	c.IndentedJSON(http.StatusOK, gin.H{
 		"lobbies": LobbiesInfo,
-	})	
+	})
 }
 
 func closeLobby(c *gin.Context) {
@@ -236,7 +235,7 @@ func leaveLobby(c *gin.Context) {
 				lobby.UserIcons[i] = i
 				var socket = lobby.ConnectedUsers[input.UserID]
 				socket.Connection.Close()
-				delete(lobby.ConnectedUsers,input.UserID)
+				delete(lobby.ConnectedUsers, input.UserID)
 				lobby.mutex.Unlock()
 			}
 		}
@@ -546,7 +545,7 @@ func webSocketHandler(c *gin.Context) {
 		lobby.ConnectedUsers = make(map[string]WebSocketInfo)
 	}
 	socketInfo := WebSocketInfo{
-		Connection: conn,
+		Connection:  conn,
 		IsConnected: true,
 	}
 	lobby.ConnectedUsers[userID] = socketInfo
@@ -601,7 +600,7 @@ func broadcastLobbyUpdate(lobbyID string) {
 	for userid := range lobby.ConnectedUsers {
 		var socket = lobby.ConnectedUsers[userid]
 		socket.Connection.WriteJSON(lobbyData)
-		log.Println("data sent to : ",userid, ", data: ",lobbyData)
+		log.Println("data sent to : ", userid, ", data: ", lobbyData)
 	}
 }
 

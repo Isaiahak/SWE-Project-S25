@@ -22,11 +22,23 @@ export default function JoinLobbyModal({ isOpen, onClose }) {
   fetchLobbies()
   }, [])
 
+  const CreateLobby = (lobby) =>{
+    let hostName = ""
+    for (let i = 0; i< lobby.Members.length; i++){
+        if (lobby.Members[i] == lobby.HostID){
+          hostName = lobby.UserNicknames[i]
+        }
+      }
+    return(
+      <LobbyIcon onClick={() => JoinLobby(lobby.LobbyID, navigate)} key={lobby.LobbyID} gameType={gameType[lobby.GameID]}  hostName={hostName} currentPlayers={lobby.PlayerCount} className="w-1/2 p-2"/>
+    )
+  }
+
   const Lobbies = () =>{
     return(
     <div className="flex flex-wrap w-full gap-6 items-center justify-flex-start">
       {Array.isArray(currentLobbies) && currentLobbies.map(lobby => (
-          <LobbyIcon onClick={() => JoinLobby(lobby.LobbyID, navigate)} key={lobby.LobbyID} gameType={gameType[lobby.GameID]}  hostName={lobby.HostID} currentPlayers={lobby.PlayerCount} className="w-1/2 p-2"/>
+          CreateLobby(lobby)
         ))}
     </div>
     )

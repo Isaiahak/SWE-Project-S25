@@ -13,7 +13,7 @@ export default function Sidebar() {
 	const [LobbyModal, setLobbyModal] = useState(false)
   const [NoLobby, setNoLobby] = useState(false)
   const handleGetRandomLobby = (navigate) =>{
-    var result = GetRandomLobby(navigate)
+    const result = GetRandomLobby(navigate)
     if (!result){
       setIsNoLobbyModalOpen(true)
     }
@@ -26,12 +26,12 @@ export default function Sidebar() {
           Aken Studios
         </h1>
         <Link onClick={() => handleGetRandomLobby(navigate)}>
-          <SidebarButton label="PLAY" /> 
+          <SidebarButton label="QUICK PLAY" /> 
         </Link>
         <Link onClick={() => CreateLobby(game,navigate)}>
           <SidebarButton label="CREATE"/>
         </Link>
-        <Link onClick={() => setIsModalOpen(true)}>
+        <Link onClick={() => setLobbyModal(true)}>
         	<SidebarButton label="JOIN" />
         </Link>
         <JoinLobbyModal isOpen={LobbyModal} onClose={() => setLobbyModal(false)}/>
