@@ -1,4 +1,4 @@
-import SidebarButton from "./SidebarButton";
+import SidebarButton from "./SidebarButton"
 import useGameContext from "../hooks/useGameContext.tsx"
 import { CreateLobby, GetRandomLobby } from "../services/LobbyServices.tsx"
 import JoinLobbyModal from "./JoinLobbyModal.tsx"
@@ -12,13 +12,14 @@ export default function Sidebar() {
 	const navigate = useNavigate()
 	const [LobbyModal, setLobbyModal] = useState(false)
   const [NoLobby, setNoLobby] = useState(false)
-  const handleGetRandomLobby = (navigate) =>{
-    const result = GetRandomLobby(navigate)
-    if (!result){
-      setIsNoLobbyModalOpen(true)
-    }
 
+  const handleGetRandomLobby  = async (navigate) =>{
+    const result = await GetRandomLobby(navigate)
+    if (result == false){
+      setNoLobby(true)
+    }
   }
+
   return (
     <nav className="h-screen w-60 flex flex-col justify-between bg-sidebar-primary shadow-lg">
       <div className="flex flex-col">
@@ -35,7 +36,7 @@ export default function Sidebar() {
         	<SidebarButton label="JOIN" />
         </Link>
         <JoinLobbyModal isOpen={LobbyModal} onClose={() => setLobbyModal(false)}/>
-        <NoLobbyModal isOPen={NoLobby} onClose={() => setNoLobby(false)}/>
+        <NoLobbyModal isOpen={NoLobby} onClose={() => setNoLobby(false)}/>
       </div>
     </nav>
   );

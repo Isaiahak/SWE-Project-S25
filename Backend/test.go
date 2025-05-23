@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	"log"
 	"math/rand"
 	"net/http"
 	"sync"
@@ -14,7 +13,7 @@ import (
 )
 
 // struct for the lobby objects the server will contain a list of users
-// i need to worry about this lobby implementation becasue if for some reason a user removes
+// i need to worry about this lobby implementation because if for some reason a user removes
 // their userid from the cookies there slot in the lobby will forever be filled which can lead to complications
 
 type Lobby struct {
@@ -307,7 +306,8 @@ func JoinRandomLobby(c *gin.Context) {
 	lobbyManager.mutex.RLock()
 	if len(lobbyManager.lobbies) == 0 {
 		lobbyManager.mutex.RUnlock()
-		c.IndentedJSON(http.StatusBadRequest, gin.H{
+		c.IndentedJSON(http.StatusOK, gin.H{
+			"result":  false,
 			"message": "no current game lobbyManager.lobbies",
 		})
 	} else {
@@ -323,7 +323,8 @@ func JoinRandomLobby(c *gin.Context) {
 		RandomLobby.mutex.Lock()
 		if RandomLobby.LobbyID == "empty" {
 			RandomLobby.mutex.Unlock()
-			c.IndentedJSON(http.StatusBadRequest, gin.H{
+			c.IndentedJSON(http.StatusOK, gin.H{
+				"result":  false,
 				"message": "All current lobbies are full",
 			})
 		} else {
@@ -341,6 +342,7 @@ func JoinRandomLobby(c *gin.Context) {
 			broadcastLobbyUpdate(lobbyID)
 
 			c.IndentedJSON(http.StatusOK, gin.H{
+				"result":   true,
 				"lobby_id": lobbyID,
 				"user_id":  availableID,
 			})
@@ -600,7 +602,6 @@ func broadcastLobbyUpdate(lobbyID string) {
 	for userid := range lobby.ConnectedUsers {
 		var socket = lobby.ConnectedUsers[userid]
 		socket.Connection.WriteJSON(lobbyData)
-		log.Println("data sent to : ", userid, ", data: ", lobbyData)
 	}
 }
 

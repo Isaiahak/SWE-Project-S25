@@ -70,11 +70,11 @@ export const GetRandomLobby = async (navigate) => {
 	try{
 
 		const res = await axios.get(`${backend_url}/join-random`)
-		if (res.data.user_id != ""){
+		if (res.data.result == true){
 			sessionStorage.setItem('user_id', res.data.user_id)
 			sessionStorage.setItem('lobby_id',res.data.lobby_id)
-			navigate('/Lobby')	
-			return true		
+			navigate('/Lobby')
+			return true				
 		}else{
 			return false
 		}
@@ -104,7 +104,7 @@ export const ChangeIcon = async (userIcon) => {
 		if (!user_id || !lobby_id) {
 			throw new Error("Missing user_id or lobby_id in session storage");
 		}	
-		const res = await axios.post(`${backend_url}/change-icon`,{user_id:`${user_id}`, lobby_id:`${lobby_id}`, user_icon:userIcon})	
+		await axios.post(`${backend_url}/change-icon`,{user_id:`${user_id}`, lobby_id:`${lobby_id}`, user_icon:userIcon})	
 	}	
 	catch(error){
 		console.error("couldn't change the icon",error)
@@ -119,7 +119,7 @@ export const ChangeNickname = async (userNickname) => {
 			throw new Error("Missing user_id or lobby_id in session storage")
 		}
 		if (userNickname != ''){
-			const res = await axios.post(`${backend_url}/change-nickname`,{ user_id:`${user_id}`, lobby_id:`${lobby_id}`, user_nickname:`${userNickname}`})
+			await axios.post(`${backend_url}/change-nickname`,{ user_id:`${user_id}`, lobby_id:`${lobby_id}`, user_nickname:`${userNickname}`})
 		}else{
 			throw new Error("Need to add a valid nickname")
 		}
@@ -136,7 +136,7 @@ export const ChangeLobbyType = async () => {
 		if (!lobby_id) {
 			throw new Error("No lobby_id in session storage")
 		}
-		const res = await axios.post(`${backend_url}/change-lobby-type`,lobby_id)
+		await axios.post(`${backend_url}/change-lobby-type`,lobby_id)
 	}
 	catch(error){
 		console.error("couldn't change lobby type",error)

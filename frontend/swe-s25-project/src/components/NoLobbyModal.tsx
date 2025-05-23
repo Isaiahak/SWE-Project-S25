@@ -13,7 +13,7 @@ export default function NoLobbyModal({ isOpen, onClose }){
 				×
 				</button>
 				<h1
-				className="w-full p-3 text-black rounded-lg outline-none border border-primary placeholder-gray-600 focus:ring-2 focus:ring-hover"
+				className="w-full p-3 text-black rounded-lg outline-none text-center placeholder-gray-600"
 				>Sorry there are no lobbies currently!</h1>
 			</div>
 		</div>
