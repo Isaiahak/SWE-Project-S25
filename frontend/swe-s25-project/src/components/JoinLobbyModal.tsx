@@ -20,7 +20,7 @@ export default function JoinLobbyModal({ isOpen, onClose }) {
     };
     
   fetchLobbies()
-  }, [])
+  }, [isOpen])
 
   const CreateLobby = (lobby) =>{
     let hostName = ""
