@@ -88,7 +88,6 @@ class LobbyWebSocketService {
     try {
       const data = JSON.parse(event.data) as LobbyUpdateMessage
       this.notifyListeners(data)
-      console.log('message recieved: ', data)
     } catch (error) {
       console.error('Error parsing WebSocket message', error)
     }

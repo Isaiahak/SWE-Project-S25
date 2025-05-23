@@ -10,11 +10,13 @@ import (
 	"net/http"
 	"sync"
 	"time"
+	"log"
 )
 
 // struct for the lobby objects the server will contain a list of users
 // i need to worry about this lobby implementation becasue if for some reason a user removes
 // their userid from the cookies there slot in the lobby will forever be filled which can lead to complications
+
 
 type Lobby struct {
 	LobbyID           string                   `json:id`
@@ -29,7 +31,7 @@ type Lobby struct {
 	UsedIDs           []bool                   `json:usedIDs`
 	UserNicknames     []*string                `json:userNicknames`
 	UserIcons         []int                    `json:userIcons`
-	ConnectedUsers    map[*websocket.Conn]bool `json:connectedUsers`
+	ConnectedUsers    map[string]WebSocketInfo `json:connectedUsers`
 	mutex             sync.RWMutex
 }
 
@@ -50,6 +52,11 @@ type LobbyData struct {
 type LobbyManager struct {
 	lobbies map[string]*Lobby
 	mutex   sync.RWMutex
+}
+
+type WebSocketInfo struct {
+	Connection *websocket.Conn
+	IsConnected bool
 }
 
 var upgrader = websocket.Upgrader{
@@ -134,11 +141,11 @@ func getLobbies(c *gin.Context) {
 			LobbiesInfo = append(LobbiesInfo, LobbyData)
 		}
 	}
+
 	lobbyManager.mutex.RUnlock()
 	c.IndentedJSON(http.StatusOK, gin.H{
 		"lobbies": LobbiesInfo,
-	})
-
+	})	
 }
 
 func closeLobby(c *gin.Context) {
@@ -159,9 +166,10 @@ func closeLobby(c *gin.Context) {
 
 	if input.UserID == *lobby.HostID {
 		lobby.mutex.Lock()
-		for conn := range lobby.ConnectedUsers {
-			conn.Close()
-			delete(lobby.ConnectedUsers, conn)
+		for userid := range lobby.ConnectedUsers {
+			var socket = lobby.ConnectedUsers[userid]
+			socket.Connection.Close()
+			delete(lobby.ConnectedUsers, userid)
 		}
 		lobby.mutex.Unlock()
 
@@ -201,9 +209,10 @@ func leaveLobby(c *gin.Context) {
 		lobby.mutex.RUnlock()
 
 		lobby.mutex.Lock()
-		for conn := range lobby.ConnectedUsers {
-			conn.Close()
-			delete(lobby.ConnectedUsers, conn)
+		for userid := range lobby.ConnectedUsers {
+			var socket = lobby.ConnectedUsers[userid]
+			socket.Connection.Close()
+			delete(lobby.ConnectedUsers, userid)
 		}
 		lobby.mutex.Unlock()
 
@@ -225,7 +234,9 @@ func leaveLobby(c *gin.Context) {
 				newNickname := generateRandomNickname()
 				lobby.UserNicknames[i] = &newNickname
 				lobby.UserIcons[i] = i
-
+				var socket = lobby.ConnectedUsers[input.UserID]
+				socket.Connection.Close()
+				delete(lobby.ConnectedUsers,input.UserID)
 				lobby.mutex.Unlock()
 			}
 		}
@@ -296,7 +307,7 @@ func joinLobby(c *gin.Context) {
 func JoinRandomLobby(c *gin.Context) {
 	lobbyManager.mutex.RLock()
 	if len(lobbyManager.lobbies) == 0 {
-		lobbyManager.mutex.Unlock()
+		lobbyManager.mutex.RUnlock()
 		c.IndentedJSON(http.StatusBadRequest, gin.H{
 			"message": "no current game lobbyManager.lobbies",
 		})
@@ -309,7 +320,7 @@ func JoinRandomLobby(c *gin.Context) {
 				break
 			}
 		}
-		lobbyManager.mutex.Unlock()
+		lobbyManager.mutex.RUnlock()
 		RandomLobby.mutex.Lock()
 		if RandomLobby.LobbyID == "empty" {
 			RandomLobby.mutex.Unlock()
@@ -532,9 +543,13 @@ func webSocketHandler(c *gin.Context) {
 
 	lobby.mutex.Lock()
 	if lobby.ConnectedUsers == nil {
-		lobby.ConnectedUsers = make(map[*websocket.Conn]bool)
+		lobby.ConnectedUsers = make(map[string]WebSocketInfo)
 	}
-	lobby.ConnectedUsers[conn] = true
+	socketInfo := WebSocketInfo{
+		Connection: conn,
+		IsConnected: true,
+	}
+	lobby.ConnectedUsers[userID] = socketInfo
 	lobby.mutex.Unlock()
 
 	sendLobbyState(conn, lobby)
@@ -542,7 +557,7 @@ func webSocketHandler(c *gin.Context) {
 	defer func() {
 		conn.Close()
 		lobby.mutex.Lock()
-		delete(lobby.ConnectedUsers, conn)
+		delete(lobby.ConnectedUsers, userID)
 		lobby.mutex.Unlock()
 	}()
 
@@ -583,9 +598,10 @@ func broadcastLobbyUpdate(lobbyID string) {
 	lobbyData := gin.H{
 		"lobby": LobbyData,
 	}
-
-	for conn := range lobby.ConnectedUsers {
-		conn.WriteJSON(lobbyData)
+	for userid := range lobby.ConnectedUsers {
+		var socket = lobby.ConnectedUsers[userid]
+		socket.Connection.WriteJSON(lobbyData)
+		log.Println("data sent to : ",userid, ", data: ",lobbyData)
 	}
 }
 

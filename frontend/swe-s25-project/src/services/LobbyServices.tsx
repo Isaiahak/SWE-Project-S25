@@ -68,14 +68,15 @@ export const GetLobbies = async () => {
 
 export const GetRandomLobby = async (navigate) => {
 	try{
+
 		const res = await axios.get(`${backend_url}/join-random`)
 		if (res.data.user_id != ""){
-			console.log("we have some lobby")
 			sessionStorage.setItem('user_id', res.data.user_id)
 			sessionStorage.setItem('lobby_id',res.data.lobby_id)
-			navigate('/Lobby')			
+			navigate('/Lobby')	
+			return true		
 		}else{
-			console.log("No current lobbies")
+			return false
 		}
 	}
 	catch(error){
@@ -136,7 +137,6 @@ export const ChangeLobbyType = async () => {
 			throw new Error("No lobby_id in session storage")
 		}
 		const res = await axios.post(`${backend_url}/change-lobby-type`,lobby_id)
-		console.log(res.data.message)
 	}
 	catch(error){
 		console.error("couldn't change lobby type",error)

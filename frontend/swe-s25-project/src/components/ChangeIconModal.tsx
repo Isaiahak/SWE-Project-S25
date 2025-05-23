@@ -2,14 +2,14 @@ import { ChangeIcon } from '../services/LobbyServices'
 import { useState } from 'react'
 export default function ChangeIconModal({ isOpen, onClose }){
   const avatars = [
-    '/public/icons/anaconda.png',
-    '/public/icons/bear.png',
-    '/public/icons/blackbird.png',
-    '/public/icons/cow.png',
-    '/public/icons/ganesha.png',
-    '/public/icons/jaguar.png',
-    '/public/icons/panda-bear.png',
-    '/public/icons/turtle.png'
+    '/icons/anaconda.png',
+    '/icons/bear.png',
+    '/icons/blackbird.png',
+    '/icons/cow.png',
+    '/icons/ganesha.png',
+    '/icons/jaguar.png',
+    '/icons/panda-bear.png',
+    '/icons/turtle.png'
   ]
   const [currentIcon, setCurrentIcon] = useState(0)
   const handleChangeIcon = (currentIcon) =>{

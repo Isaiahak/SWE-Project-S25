@@ -2,6 +2,7 @@ import SidebarButton from "./SidebarButton";
 import useGameContext from "../hooks/useGameContext.tsx"
 import { CreateLobby, GetRandomLobby } from "../services/LobbyServices.tsx"
 import JoinLobbyModal from "./JoinLobbyModal.tsx"
+import NoLobbyModal from "./NoLobbyModal.tsx"
 import {useState} from 'react'
 import { useNavigate, Link } from "react-router-dom"
 
@@ -9,14 +10,22 @@ import { useNavigate, Link } from "react-router-dom"
 export default function Sidebar() {
 	const {game} = useGameContext()
 	const navigate = useNavigate()
-	const [isModalOpen, setIsModalOpen] = useState(false)
+	const [LobbyModal, setLobbyModal] = useState(false)
+  const [NoLobby, setNoLobby] = useState(false)
+  const handleGetRandomLobby = (navigate) =>{
+    var result = GetRandomLobby(navigate)
+    if (!result){
+      setIsNoLobbyModalOpen(true)
+    }
+
+  }
   return (
     <nav className="h-screen w-60 flex flex-col justify-between bg-sidebar-primary shadow-lg">
       <div className="flex flex-col">
         <h1 className="text-center font-[Bebas Neue] font-bold text-[1.75rem]">
           Aken Studios
         </h1>
-        <Link onClick={() => GetRandomLobby(navigate)}>
+        <Link onClick={() => handleGetRandomLobby(navigate)}>
           <SidebarButton label="PLAY" /> 
         </Link>
         <Link onClick={() => CreateLobby(game,navigate)}>
@@ -25,7 +34,8 @@ export default function Sidebar() {
         <Link onClick={() => setIsModalOpen(true)}>
         	<SidebarButton label="JOIN" />
         </Link>
-        <JoinLobbyModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}/>
+        <JoinLobbyModal isOpen={LobbyModal} onClose={() => setLobbyModal(false)}/>
+        <NoLobbyModal isOPen={NoLobby} onClose={() => setNoLobby(false)}/>
       </div>
     </nav>
   );
