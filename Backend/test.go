@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"log"
 	"math/rand"
 	"net/http"
 	"sync"
@@ -17,24 +18,26 @@ import (
 // their userid from the cookies there slot in the lobby will forever be filled which can lead to complications
 
 type Lobby struct {
-	LobbyID           string                   `json:id`
-	GameID            string                   `json:game_id`
-	PlayerCount       int                      `json:player_count`
-	LobbyType         string                   `json:lobby_type`
-	PreferredLanguage string                   `json:language`
-	ChatID            string                   `json:chat_id`
-	Difficulty        string                   `json:difficulty`
-	HostID            *string                  `json:host_id`
-	Members           []*string                `json:members`
-	UsedIDs           []bool                   `json:usedIDs`
-	UserNicknames     []*string                `json:userNicknames`
-	UserIcons         []int                    `json:userIcons`
-	ConnectedUsers    map[string]WebSocketInfo `json:connectedUsers`
+	LobbyID           string
+	LobbyState        bool
+	GameID            string
+	PlayerCount       int
+	LobbyType         string
+	PreferredLanguage string
+	ChatID            string
+	Difficulty        string
+	HostID            *string
+	Members           []*string
+	UsedIDs           []bool
+	UserNicknames     []*string
+	UserIcons         []int
+	ConnectedUsers    map[string]WebSocketInfo
 	mutex             sync.RWMutex
 }
 
 type LobbyData struct {
 	LobbyID       string
+	LobbyState    bool
 	GameID        string
 	PlayerCount   int
 	LobbyType     string
@@ -123,7 +126,7 @@ func getLobbies(c *gin.Context) {
 	var LobbiesInfo []LobbyData
 	lobbyManager.mutex.RLock()
 	for i := range lobbyManager.lobbies {
-		if lobbyManager.lobbies[i].LobbyType == "public" {
+		if lobbyManager.lobbies[i].LobbyType == "public" && lobbyManager.lobbies[i].PlayerCount < 8 {
 			LobbyData := LobbyData{
 				LobbyID:       lobbyManager.lobbies[i].LobbyID,
 				GameID:        lobbyManager.lobbies[i].GameID,
@@ -205,8 +208,11 @@ func leaveLobby(c *gin.Context) {
 	lobby.mutex.RLock()
 	if input.UserID == *lobby.HostID {
 		lobby.mutex.RUnlock()
+		log.Println("host left")
 
 		lobby.mutex.Lock()
+		lobby.LobbyState = false
+		broadcastLobbyUpdate(input.LobbyID)
 		for userid := range lobby.ConnectedUsers {
 			var socket = lobby.ConnectedUsers[userid]
 			socket.Connection.Close()
@@ -222,6 +228,7 @@ func leaveLobby(c *gin.Context) {
 			"message": "server has been closed",
 		})
 	} else {
+		log.Println("a user left")
 		for i := 0; i < 8; i++ {
 			lobby.mutex.RLock()
 			if input.UserID == *lobby.Members[i] {
@@ -280,7 +287,8 @@ func joinLobby(c *gin.Context) {
 			}
 		}
 		if full == true {
-			c.IndentedJSON(http.StatusCreated, gin.H{
+			c.IndentedJSON(http.StatusOK, gin.H{
+				"result":  false,
 				"message": "lobby full",
 			})
 		} else {
@@ -289,6 +297,7 @@ func joinLobby(c *gin.Context) {
 			broadcastLobbyUpdate(input.LobbyID)
 
 			c.IndentedJSON(http.StatusCreated, gin.H{
+				"result":   true,
 				"message":  "joined lobby",
 				"user_id":  availableID, // fill with user id from lobby
 				"lobby_id": input.LobbyID,
@@ -296,6 +305,7 @@ func joinLobby(c *gin.Context) {
 		}
 	} else {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"result":  false,
 			"message": "invalid lobby id",
 		})
 	}
@@ -382,6 +392,7 @@ func createLobby(c *gin.Context) {
 
 	newLobby := Lobby{
 		LobbyID:           lobbyID,
+		LobbyState:        true,
 		GameID:            input.GameID,
 		PlayerCount:       1,
 		LobbyType:         "public",
@@ -585,6 +596,7 @@ func broadcastLobbyUpdate(lobbyID string) {
 
 	LobbyData := LobbyData{
 		LobbyID:       lobby.LobbyID,
+		LobbyState:    lobby.LobbyState,
 		GameID:        lobby.GameID,
 		PlayerCount:   lobby.PlayerCount,
 		LobbyType:     lobby.LobbyType,

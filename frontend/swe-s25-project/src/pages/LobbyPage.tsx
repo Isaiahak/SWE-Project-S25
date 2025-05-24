@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import ChangeNicknameModal from '../components/ChangeNicknameModal'
 import ChangeIconModal from '../components/ChangeIconModal'
 import { LeaveLobby, StartGame } from '../services/LobbyServices'
-import { useLobbyWebSocket, disconnectFromLobby } from '../services/WebSocketService'
+import { useLobbyWebSocket, disconnectFromLobby } from '../services/WebSocketServices'
 
 export default function LobbyPage() {
   const navigate = useNavigate()
@@ -67,7 +67,7 @@ export default function LobbyPage() {
   return (
     <div>
       {/* Top Section */}
-      <div className="p-4 gap-12 h-[60vh] w-full bg-primary flex flex-row wrap">
+      <div className="p-4 h-[60vh] w-full bg-primary flex flex-row flex-wrap justify-start mx-auto">
       {lobbyData.Members && lobbyData.Members.map((memberId, index) => {
         if (lobbyData.UsedIDs[index]){
           const isCurrentUser = memberId === userId

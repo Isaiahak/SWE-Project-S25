@@ -2,7 +2,7 @@ import SidebarButton from "./SidebarButton"
 import useGameContext from "../hooks/useGameContext.tsx"
 import { CreateLobby, GetRandomLobby } from "../services/LobbyServices.tsx"
 import JoinLobbyModal from "./JoinLobbyModal.tsx"
-import NoLobbyModal from "./NoLobbyModal.tsx"
+import UtilityModal from "./UtilityModal.tsx"
 import {useState} from 'react'
 import { useNavigate, Link } from "react-router-dom"
 
@@ -11,6 +11,7 @@ export default function Sidebar() {
 	const navigate = useNavigate()
 	const [LobbyModal, setLobbyModal] = useState(false)
   const [NoLobby, setNoLobby] = useState(false)
+  const [FullLobby, setFullLobby] = useState(false)
 
   const handleGetRandomLobby  = async (navigate) =>{
     const result = await GetRandomLobby(navigate)
@@ -35,7 +36,8 @@ export default function Sidebar() {
         	<SidebarButton label="JOIN" />
         </Link>
         <JoinLobbyModal isOpen={LobbyModal} onClose={() => setLobbyModal(false)}/>
-        <NoLobbyModal isOpen={NoLobby} onClose={() => setNoLobby(false)}/>
+        <UtilityModal isOpen={NoLobby} onClose={() => setNoLobby(false)} text="Sorry there are no lobbies currently!"/>
+        <UtilityModal isOpen={FullLobby} onClose={() => setFullLobby(false)} text="Sorry the lobby is full!"/>
       </div>
     </nav>
   );
