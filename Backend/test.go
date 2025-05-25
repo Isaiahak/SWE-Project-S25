@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	"log"
 	"math/rand"
 	"net/http"
 	"sync"
@@ -32,7 +31,6 @@ type Lobby struct {
 	UserNicknames     []*string
 	UserIcons         []int
 	ConnectedUsers    map[string]WebSocketInfo
-	mutex             sync.RWMutex
 }
 
 type LobbyData struct {
@@ -98,21 +96,21 @@ func changeLobbyType(c *gin.Context) {
 		})
 		return
 	}
+
 	lobbyManager.mutex.RLock()
 	var lobby = lobbyManager.lobbies[input.LobbyID]
-	lobbyManager.mutex.RUnlock()
 
-	lobby.mutex.RLock()
 	var lobbyType string
 	if lobby.LobbyType == "public" {
 		lobbyType = "private"
 		lobby.LobbyType = lobbyType
-		lobby.mutex.RUnlock()
+
 	} else {
 		lobbyType = "public"
 		lobby.LobbyType = lobbyType
-		lobby.mutex.RUnlock()
 	}
+
+	lobbyManager.mutex.RUnlock()
 
 	broadcastLobbyUpdate(input.LobbyID)
 
@@ -144,50 +142,13 @@ func getLobbies(c *gin.Context) {
 	}
 
 	lobbyManager.mutex.RUnlock()
+
 	c.IndentedJSON(http.StatusOK, gin.H{
 		"lobbies": LobbiesInfo,
 	})
 }
 
-func closeLobby(c *gin.Context) {
-	var input struct {
-		LobbyID string `json:"lobby_id" binding:"required"`
-		UserID  string `json:"user_id" binding:"required"`
-	}
-
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-	lobbyManager.mutex.RLock()
-	var lobby = lobbyManager.lobbies[input.LobbyID]
-	lobbyManager.mutex.RUnlock()
-
-	if input.UserID == *lobby.HostID {
-		lobby.mutex.Lock()
-		for userid := range lobby.ConnectedUsers {
-			var socket = lobby.ConnectedUsers[userid]
-			socket.Connection.Close()
-			delete(lobby.ConnectedUsers, userid)
-		}
-		lobby.mutex.Unlock()
-
-		lobbyManager.mutex.Lock()
-		delete(lobbyManager.lobbies, input.LobbyID)
-		lobbyManager.mutex.Unlock()
-		c.IndentedJSON(http.StatusOK, gin.H{
-			"message": "server has been closed",
-		})
-	} else {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{
-			"message": "non-host members cannot close server",
-		})
-	}
-}
-
-// leaves lobby is a frontend side task which should remove the
+// leaves lobby if its a member closes lobby if its the host
 func leaveLobby(c *gin.Context) {
 	var input struct {
 		LobbyID string `json:"lobby_id" binding:"required"`
@@ -200,41 +161,33 @@ func leaveLobby(c *gin.Context) {
 		})
 		return
 	}
-	// we have two cases the host is leaving or a non host
+
 	lobbyManager.mutex.RLock()
 	var lobby = lobbyManager.lobbies[input.LobbyID]
-	lobbyManager.mutex.RUnlock()
 
-	lobby.mutex.RLock()
 	if input.UserID == *lobby.HostID {
-		lobby.mutex.RUnlock()
-		log.Println("host left")
-
-		lobby.mutex.Lock()
 		lobby.LobbyState = false
+		lobbyManager.mutex.RUnlock()
 		broadcastLobbyUpdate(input.LobbyID)
+
+		lobbyManager.mutex.RLock()
 		for userid := range lobby.ConnectedUsers {
 			var socket = lobby.ConnectedUsers[userid]
 			socket.Connection.Close()
 			delete(lobby.ConnectedUsers, userid)
 		}
-		lobby.mutex.Unlock()
 
-		lobbyManager.mutex.Lock()
 		delete(lobbyManager.lobbies, input.LobbyID)
-		lobbyManager.mutex.Unlock()
+		lobbyManager.mutex.RUnlock()
 
 		c.IndentedJSON(http.StatusOK, gin.H{
+			"result":  true,
 			"message": "server has been closed",
 		})
 	} else {
-		log.Println("a user left")
 		for i := 0; i < 8; i++ {
-			lobby.mutex.RLock()
-			if input.UserID == *lobby.Members[i] {
-				lobby.mutex.RUnlock()
 
-				lobby.mutex.Lock()
+			if input.UserID == *lobby.Members[i] {
 				lobby.UsedIDs[i] = false
 				newNickname := generateRandomNickname()
 				lobby.UserNicknames[i] = &newNickname
@@ -242,22 +195,23 @@ func leaveLobby(c *gin.Context) {
 				var socket = lobby.ConnectedUsers[input.UserID]
 				socket.Connection.Close()
 				delete(lobby.ConnectedUsers, input.UserID)
-				lobby.mutex.Unlock()
 			}
 		}
-		lobby.mutex.Lock()
+
 		lobby.PlayerCount = lobby.PlayerCount - 1
-		lobby.mutex.Unlock()
+
+		lobbyManager.mutex.RUnlock()
 
 		broadcastLobbyUpdate(input.LobbyID)
 
 		c.IndentedJSON(http.StatusOK, gin.H{
+			"result":  true,
 			"message": "lefted lobby",
 		})
 	}
 }
 
-// joins a lobby and creates a user if required
+// joins a lobby
 func joinLobby(c *gin.Context) {
 	var input struct {
 		LobbyID string `json:"lobby_id" binding:"required"`
@@ -271,7 +225,6 @@ func joinLobby(c *gin.Context) {
 	}
 	lobbyManager.mutex.RLock()
 	lobby, ok := lobbyManager.lobbies[input.LobbyID]
-	lobbyManager.mutex.RUnlock()
 
 	if ok {
 		var availableID string
@@ -287,12 +240,14 @@ func joinLobby(c *gin.Context) {
 			}
 		}
 		if full == true {
+			lobbyManager.mutex.RUnlock()
 			c.IndentedJSON(http.StatusOK, gin.H{
 				"result":  false,
 				"message": "lobby full",
 			})
 		} else {
 			lobby.PlayerCount = lobby.PlayerCount + 1
+			lobbyManager.mutex.RUnlock()
 
 			broadcastLobbyUpdate(input.LobbyID)
 
@@ -304,7 +259,8 @@ func joinLobby(c *gin.Context) {
 			})
 		}
 	} else {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{
+		lobbyManager.mutex.RUnlock()
+		c.IndentedJSON(http.StatusOK, gin.H{
 			"result":  false,
 			"message": "invalid lobby id",
 		})
@@ -312,6 +268,7 @@ func joinLobby(c *gin.Context) {
 
 }
 
+// joins a random lobby
 func JoinRandomLobby(c *gin.Context) {
 	lobbyManager.mutex.RLock()
 	if len(lobbyManager.lobbies) == 0 {
@@ -330,9 +287,7 @@ func JoinRandomLobby(c *gin.Context) {
 			}
 		}
 		lobbyManager.mutex.RUnlock()
-		RandomLobby.mutex.Lock()
 		if RandomLobby.LobbyID == "empty" {
-			RandomLobby.mutex.Unlock()
 			c.IndentedJSON(http.StatusOK, gin.H{
 				"result":  false,
 				"message": "All current lobbies are full",
@@ -347,7 +302,8 @@ func JoinRandomLobby(c *gin.Context) {
 				}
 			}
 			var lobbyID = RandomLobby.LobbyID
-			RandomLobby.mutex.Unlock()
+
+			lobbyManager.mutex.RUnlock()
 
 			broadcastLobbyUpdate(lobbyID)
 
@@ -412,6 +368,8 @@ func createLobby(c *gin.Context) {
 	lobbyManager.lobbies[lobbyID] = &newLobby
 	lobbyManager.mutex.Unlock()
 
+	broadcastLobbyUpdate(lobbyID)
+
 	c.IndentedJSON(http.StatusCreated, gin.H{
 		"message":  "created lobby",
 		"lobby_id": newLobby.LobbyID,
@@ -419,6 +377,7 @@ func createLobby(c *gin.Context) {
 	})
 }
 
+// gets the lobby information for a specific lobby
 func getLobbyInfo(c *gin.Context) {
 	var input struct {
 		LobbyID string `json:"lobby_id" binding:"required"`
@@ -432,7 +391,6 @@ func getLobbyInfo(c *gin.Context) {
 	}
 	lobbyManager.mutex.RLock()
 	lobby := lobbyManager.lobbies[input.LobbyID]
-	lobbyManager.mutex.RUnlock()
 
 	LobbyData := LobbyData{
 		LobbyID:       lobby.LobbyID,
@@ -447,11 +405,14 @@ func getLobbyInfo(c *gin.Context) {
 		UserIcons:     lobby.UserIcons,
 	}
 
+	lobbyManager.mutex.RUnlock()
+
 	c.IndentedJSON(http.StatusOK, gin.H{
 		"lobby": LobbyData,
 	})
 }
 
+// changes user nickname
 func changeUserNickname(c *gin.Context) {
 	var input struct {
 		LobbyID      string `json:"lobby_id" binding:"required"`
@@ -468,15 +429,13 @@ func changeUserNickname(c *gin.Context) {
 
 	lobbyManager.mutex.RLock()
 	lobby := lobbyManager.lobbies[input.LobbyID]
-	lobbyManager.mutex.RUnlock()
-
-	lobby.mutex.Lock()
 	for i := 0; i < 8; i++ {
 		if input.UserID == *lobby.Members[i] {
 			lobby.UserNicknames[i] = &input.UserNickname
 		}
 	}
-	lobby.mutex.Unlock()
+
+	lobbyManager.mutex.RUnlock()
 
 	broadcastLobbyUpdate(input.LobbyID)
 
@@ -486,6 +445,7 @@ func changeUserNickname(c *gin.Context) {
 
 }
 
+// changes user icon
 func changeUserIcon(c *gin.Context) {
 	var input struct {
 		LobbyID  string `json:"lobby_id" binding:"required"`
@@ -502,15 +462,13 @@ func changeUserIcon(c *gin.Context) {
 
 	lobbyManager.mutex.RLock()
 	lobby := lobbyManager.lobbies[input.LobbyID]
-	lobbyManager.mutex.RUnlock()
-
-	lobby.mutex.Lock()
 	for i := 0; i < 8; i++ {
 		if input.UserID == *lobby.Members[i] {
 			lobby.UserIcons[i] = input.UserIcon
 		}
 	}
-	lobby.mutex.Unlock()
+
+	lobbyManager.mutex.RUnlock()
 
 	broadcastLobbyUpdate(input.LobbyID)
 
@@ -519,6 +477,7 @@ func changeUserIcon(c *gin.Context) {
 	})
 }
 
+// creates the websocket connecting the client frontend
 func webSocketHandler(c *gin.Context) {
 	lobbyID := c.Param("lobby_id")
 	userID := c.Query("user_id")
@@ -526,21 +485,18 @@ func webSocketHandler(c *gin.Context) {
 	// Check if lobby exists
 	lobbyManager.mutex.RLock()
 	lobby, exists := lobbyManager.lobbies[lobbyID]
-	lobbyManager.mutex.RUnlock()
 
 	if !exists {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Lobby not found"})
 		return
 	}
 
-	lobby.mutex.RLock()
 	var result = true
 	for i := 0; i < 8; i++ {
 		if *lobby.Members[i] == userID {
 			result = false
 		}
 	}
-	lobby.mutex.RUnlock()
 
 	if result {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Player not in lobby"})
@@ -553,7 +509,6 @@ func webSocketHandler(c *gin.Context) {
 		return
 	}
 
-	lobby.mutex.Lock()
 	if lobby.ConnectedUsers == nil {
 		lobby.ConnectedUsers = make(map[string]WebSocketInfo)
 	}
@@ -561,16 +516,18 @@ func webSocketHandler(c *gin.Context) {
 		Connection:  conn,
 		IsConnected: true,
 	}
+
 	lobby.ConnectedUsers[userID] = socketInfo
-	lobby.mutex.Unlock()
+
+	lobbyManager.mutex.RUnlock()
 
 	sendLobbyState(conn, lobby)
 
 	defer func() {
 		conn.Close()
-		lobby.mutex.Lock()
+		lobbyManager.mutex.RLock()
 		delete(lobby.ConnectedUsers, userID)
-		lobby.mutex.Unlock()
+		lobbyManager.mutex.RUnlock()
 	}()
 
 	// Keep the connection alive
@@ -585,14 +542,10 @@ func webSocketHandler(c *gin.Context) {
 func broadcastLobbyUpdate(lobbyID string) {
 	lobbyManager.mutex.RLock()
 	lobby, exists := lobbyManager.lobbies[lobbyID]
-	lobbyManager.mutex.RUnlock()
 
 	if !exists {
 		return
 	}
-
-	lobby.mutex.RLock()
-	defer lobby.mutex.RUnlock()
 
 	LobbyData := LobbyData{
 		LobbyID:       lobby.LobbyID,
@@ -611,19 +564,19 @@ func broadcastLobbyUpdate(lobbyID string) {
 	lobbyData := gin.H{
 		"lobby": LobbyData,
 	}
+
 	for userid := range lobby.ConnectedUsers {
 		var socket = lobby.ConnectedUsers[userid]
 		socket.Connection.WriteJSON(lobbyData)
 	}
+	lobbyManager.mutex.RUnlock()
 }
 
 func sendLobbyState(conn *websocket.Conn, lobby *Lobby) {
-	lobby.mutex.RLock()
-	defer lobby.mutex.RUnlock()
-
+	lobbyManager.mutex.RLock()
 	LobbyData := LobbyData{
 		LobbyID:       lobby.LobbyID,
-		LobbyState: lobby.LobbyState,
+		LobbyState:    lobby.LobbyState,
 		GameID:        lobby.GameID,
 		PlayerCount:   lobby.PlayerCount,
 		LobbyType:     lobby.LobbyType,
@@ -634,6 +587,7 @@ func sendLobbyState(conn *websocket.Conn, lobby *Lobby) {
 		UserNicknames: lobby.UserNicknames,
 		UserIcons:     lobby.UserIcons,
 	}
+	lobbyManager.mutex.RUnlock()
 
 	lobbyData := gin.H{
 		"lobby": LobbyData,
@@ -652,7 +606,6 @@ func main() {
 	router.POST("/change-nickname", changeUserNickname)
 	router.POST("/create-lobby", createLobby)
 	router.POST("/join-lobby", joinLobby)
-	router.POST("/close-lobby", closeLobby)
 	router.POST("/change-lobby-type", changeLobbyType)
 	router.POST("/leave-lobby", leaveLobby)
 	router.GET("/ws/lobby/:lobby_id", webSocketHandler)

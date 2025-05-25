@@ -48,11 +48,14 @@ export const LeaveLobby = async (navigate) =>{
 			navigate('/')
 			return;
 		}
-
-		await axios.post(`${backend_url}/leave-lobby`,{user_id: `${user_id}`, lobby_id: `${lobby_id}`})
-		sessionStorage.removeItem('user_id');
-		sessionStorage.removeItem('lobby_id');
-		navigate('/')
+		const res = await axios.post(`${backend_url}/leave-lobby`,{user_id: `${user_id}`, lobby_id: `${lobby_id}`})
+		if(res.data.result){	
+			sessionStorage.removeItem('user_id');
+			sessionStorage.removeItem('lobby_id');
+			navigate('/')
+		}else{
+			console.log("something went wrong")
+		}
 	}
 	catch(error){
 		console.error("didn't leave lobby",error)

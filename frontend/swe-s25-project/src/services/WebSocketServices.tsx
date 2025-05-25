@@ -109,6 +109,7 @@ class LobbyWebSocketService {
   }
 
   private notifyListeners(data: LobbyUpdateMessage): void {
+    console.log('message recieved')
     this.listeners.forEach(listener => {
       listener(data)
     });
