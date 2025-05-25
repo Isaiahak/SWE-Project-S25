@@ -44,7 +44,7 @@ class LobbyWebSocketService {
     this.userId = userId
     
     if (this.socket) {
-      this.socket.close()
+      return
     }
 
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
