@@ -623,6 +623,7 @@ func sendLobbyState(conn *websocket.Conn, lobby *Lobby) {
 
 	LobbyData := LobbyData{
 		LobbyID:       lobby.LobbyID,
+		LobbyState: lobby.LobbyState,
 		GameID:        lobby.GameID,
 		PlayerCount:   lobby.PlayerCount,
 		LobbyType:     lobby.LobbyType,

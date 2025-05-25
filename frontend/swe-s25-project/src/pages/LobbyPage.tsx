@@ -6,6 +6,7 @@ import { ArrowBigLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import ChangeNicknameModal from '../components/ChangeNicknameModal'
 import ChangeIconModal from '../components/ChangeIconModal'
+import UtilityModal from '../components/UtilityModal'
 import { LeaveLobby, StartGame } from '../services/LobbyServices'
 import { useLobbyWebSocket, disconnectFromLobby } from '../services/WebSocketServices'
 
@@ -14,6 +15,7 @@ export default function LobbyPage() {
   const [error, setError] = useState('')
   const [changeIcon, setChangeIcon] = useState(false)
   const [changeNickname, setChangeNickname] = useState(false)
+  const [hostLeft, setHostLeft] = useState(false)
   const lobbyId = sessionStorage.getItem('lobby_id')
   const userId = sessionStorage.getItem('user_id') 
   const { lobbyData, isConnected } = useLobbyWebSocket(lobbyId || '', userId || '')
@@ -47,6 +49,7 @@ export default function LobbyPage() {
     setChangeIcon(false)
     setChangeNickname(true)
   }
+
 
   useEffect(() => {
     return () => {}
@@ -113,6 +116,7 @@ export default function LobbyPage() {
         />
         <ChangeIconModal isOpen={changeIcon} onClose={() => setChangeIcon(false)}/>
         <ChangeNicknameModal isOpen={changeNickname} onClose={() => setChangeNickname(false)}/>
+        <UtilityModal isOPen={hostLeft} onClose={() => setHostLeft(false)} text="Host has left the lobby"/>
       </div>
       </div>
   )
