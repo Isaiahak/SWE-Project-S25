@@ -4,6 +4,7 @@ const backend_url = import.meta.env.VITE_BACKEND_URL
 
 interface Lobby {
   LobbyID: string
+  LobbyState: boolean
   GameID: string
   PlayerCount: number
   LobbyType: string
@@ -88,6 +89,7 @@ class LobbyWebSocketService {
     try {
       const data = JSON.parse(event.data) as LobbyUpdateMessage
       this.notifyListeners(data)
+      console.log(data)
     } catch (error) {
       console.error('Error parsing WebSocket message', error)
     }
@@ -107,6 +109,7 @@ class LobbyWebSocketService {
   }
 
   private notifyListeners(data: LobbyUpdateMessage): void {
+    console.log('message recieved')
     this.listeners.forEach(listener => {
       listener(data)
     });

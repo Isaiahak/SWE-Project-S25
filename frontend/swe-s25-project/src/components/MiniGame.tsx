@@ -1,5 +1,5 @@
-import useGameContext from "../hooks/useGameContext.tsx";
-import { motion } from "motion/react";
+import useGameContext from "../hooks/useGameContext.tsx"
+import { motion } from "motion/react"
 
 export default function MiniGame({ icon, game }) {
   const { game: selectedGame, setGame } = useGameContext();

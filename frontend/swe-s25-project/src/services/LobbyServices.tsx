@@ -21,10 +21,14 @@ export const JoinLobby = async (lobby,navigate) =>{
 	try{
 		if (lobby != ''){
 			const res = await axios.post(`${backend_url}/join-lobby`,{lobby_id: `${lobby}`})
-			sessionStorage.setItem('user_id', res.data.user_id)
-			sessionStorage.setItem('lobby_id',lobby)
-			console.log(sessionStorage.getItem('user_id'))
-			navigate('/Lobby')
+			if (res.data.result){
+				sessionStorage.setItem('user_id', res.data.user_id)
+				sessionStorage.setItem('lobby_id',lobby)
+				navigate('/Lobby')
+				return true
+			}else{
+				return false
+			}
 		}
 	}
 	catch(error){
@@ -44,17 +48,34 @@ export const LeaveLobby = async (navigate) =>{
 			navigate('/')
 			return;
 		}
-
-		await axios.post(`${backend_url}/leave-lobby`,{user_id: `${user_id}`, lobby_id: `${lobby_id}`})
-		sessionStorage.removeItem('user_id');
-		sessionStorage.removeItem('lobby_id');
-		navigate('/')
+		const res = await axios.post(`${backend_url}/leave-lobby`,{user_id: `${user_id}`, lobby_id: `${lobby_id}`})
+		if(res.data.result){	
+			sessionStorage.removeItem('user_id');
+			sessionStorage.removeItem('lobby_id');
+			navigate('/')
+		}else{
+			console.log("something went wrong")
+		}
 	}
 	catch(error){
 		console.error("didn't leave lobby",error)
 	}
 }
 
+export const LeaveLobbySessionEnd = async () => {
+	try{
+		const user_id = sessionStorage.getItem("user_id")
+		const lobby_id = sessionStorage.getItem("lobby_id")
+		if (user_id && lobby_id){
+			await axios.post(`${backend_url}/leave-lobby`,{user_id:`${user_id}`, lobby_id: `${lobby_id}`})
+			sessionStorage.removeItem('user_id');
+			sessionStorage.removeItem('lobby_id');
+		}
+	}	
+	catch(error){
+		console.error(error)
+	}
+}
 export const GetLobbies = async () => {
 	try{
 		const res =  await axios.get(`${backend_url}/lobbies`)

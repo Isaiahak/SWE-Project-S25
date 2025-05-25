@@ -1,12 +1,14 @@
 import { React, useState, useEffect } from 'react'
 import { JoinLobby, GetLobbies } from '../services/LobbyServices.tsx'
 import { useNavigate } from 'react-router-dom'
+import UtilityModal from './UtilityModal.tsx'
 import LobbyIcon from './LobbyIcon.tsx'
 
 export default function JoinLobbyModal({ isOpen, onClose }) {
   const navigate = useNavigate()
   const [lobbyID, setlobbyID] = useState("")
   const [currentLobbies, setCurrentLobbies] = useState([])
+  const [FullLobby, setFullLobby] = useState(false)
   const gameType = {1:"game 1",2:"game 2",3:"game 3",4:"game 4",5:"game 5"}
 
   useEffect(()=>{
@@ -44,6 +46,14 @@ export default function JoinLobbyModal({ isOpen, onClose }) {
     )
   }
 
+  const handleJoinLobby = async (lobbyID, navigate) =>{
+     const result = await JoinLobby(lobbyID, navigate)
+     if (!result){
+        setFullLobby(true)
+     }
+
+  }
+
 
   if (!isOpen) return null
   return (
@@ -69,7 +79,7 @@ export default function JoinLobbyModal({ isOpen, onClose }) {
             />
             <button
               className="py-3 px-5 bg-sidebar-primary text-white rounded-xl font-semibold shadow-md hover:bg-hover hover:cursor-pointer transition duration-200"
-              onClick={() => JoinLobby(lobbyID, navigate)}
+              onClick={() => handleJoinLobby(lobbyID, navigate)}
             >
               Join!
             </button>
@@ -78,6 +88,7 @@ export default function JoinLobbyModal({ isOpen, onClose }) {
         <Lobbies/>
         </div>
       </div>
+      <UtilityModal isOpen={FullLobby} onClose={() => setFullLobby(false)} text="Sorry the lobby is full!"/>
     </>
   );
 }

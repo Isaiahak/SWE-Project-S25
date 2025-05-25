@@ -1,19 +1,20 @@
 import {useState, useEffect} from 'react'
 import LobbyButton from '../components/LobbyButton'
 import Player from '../components/Player'
-import { Link } from 'react-router-dom'
 import { ArrowBigLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import ChangeNicknameModal from '../components/ChangeNicknameModal'
 import ChangeIconModal from '../components/ChangeIconModal'
+import UtilityModal from '../components/UtilityModal'
 import { LeaveLobby, StartGame } from '../services/LobbyServices'
-import { useLobbyWebSocket, disconnectFromLobby } from '../services/WebSocketService'
+import { useLobbyWebSocket, disconnectFromLobby } from '../services/WebSocketServices'
 
 export default function LobbyPage() {
   const navigate = useNavigate()
   const [error, setError] = useState('')
   const [changeIcon, setChangeIcon] = useState(false)
   const [changeNickname, setChangeNickname] = useState(false)
+  const [hostLeft, setHostLeft] = useState(false)
   const lobbyId = sessionStorage.getItem('lobby_id')
   const userId = sessionStorage.getItem('user_id') 
   const { lobbyData, isConnected } = useLobbyWebSocket(lobbyId || '', userId || '')
@@ -50,7 +51,7 @@ export default function LobbyPage() {
 
   useEffect(() => {
     return () => {}
-  }, [isConnected])
+  }, [lobbyData.LobbyState])
 
   if (!isConnected) {
       return <div className="items-center font-[3rem]">Loading lobby information...</div>
@@ -67,7 +68,7 @@ export default function LobbyPage() {
   return (
     <div>
       {/* Top Section */}
-      <div className="p-4 gap-12 h-[60vh] w-full bg-primary flex flex-row wrap">
+      <div className="p-4 h-[60vh] w-full bg-primary flex flex-row flex-wrap justify-start mx-auto">
       {lobbyData.Members && lobbyData.Members.map((memberId, index) => {
         if (lobbyData.UsedIDs[index]){
           const isCurrentUser = memberId === userId
@@ -82,12 +83,12 @@ export default function LobbyPage() {
       </div>
       {/* Bottom Section */}
       <div className="h-[40vh] w-full bg-tertiary flex justify-evenly items-center">
-        <Link
+        <button
           onClick={() => handleLeaveLobby()}
           className="bg-secondary w-20 h-10 text-black rounded-full flex justify-center items-center shadow-md hover:shadow-lg hover:shadow-indigo-400 transition-transform delay-50 duration-200 ease-in-out hover:scale-105"
         >
           <ArrowBigLeft strokeWidth={2}/>
-        </Link>
+        </button>
         <LobbyButton
           label="CHANGE NICKNAME"
           height="h-20"
@@ -95,7 +96,6 @@ export default function LobbyPage() {
           fontSize="text-[1rem]"
           onClick={() => handleChangeNickname()} 
         />
-        {/* I need to create module for changing nickname */}
         <LobbyButton
           label="CHANGE AVATAR"
           height="h-20"
@@ -103,7 +103,6 @@ export default function LobbyPage() {
           fontSize="text-[1rem]"
           onClick={() => handleChangeIcon()}
         />
-        {/* I need to create a module for changing avatar */}
         <LobbyButton
           label="START"
           height="h-40"
@@ -113,6 +112,7 @@ export default function LobbyPage() {
         />
         <ChangeIconModal isOpen={changeIcon} onClose={() => setChangeIcon(false)}/>
         <ChangeNicknameModal isOpen={changeNickname} onClose={() => setChangeNickname(false)}/>
+        <UtilityModal isOpen={hostLeft} onClose={() => setHostLeft(false)} text="Host has left the lobby"/>
       </div>
       </div>
   )

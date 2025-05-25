@@ -1,4 +1,4 @@
-export default function NoLobbyModal({ isOpen, onClose }){
+export default function UtilityModal({ isOpen, onClose,	text }){
 
 	if (!isOpen) return null
 	return(
@@ -14,7 +14,7 @@ export default function NoLobbyModal({ isOpen, onClose }){
 				</button>
 				<h1
 				className="w-full p-3 text-black rounded-lg outline-none text-center placeholder-gray-600"
-				>Sorry there are no lobbies currently!</h1>
+				>{text}</h1>
 			</div>
 		</div>
 	</>
