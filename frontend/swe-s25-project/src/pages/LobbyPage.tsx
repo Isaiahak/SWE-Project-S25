@@ -50,8 +50,23 @@ export default function LobbyPage() {
   }
 
   useEffect(() => {
+    const getLobbyData = async () =>{
+      if(lobbyData != null){
+        if (!lobbyData.LobbyState){
+          setHostLeft(true)
+          disconnectFromLobby()
+          sessionStorage.removeItem('user_id')
+          sessionStorage.removeItem('lobby_id')
+          setTimeout(() => {
+            navigate('/')
+          }, '3000')
+        }
+      }
+    }
+    getLobbyData()
+
     return () => {}
-  }, [lobbyData.LobbyState])
+  }, [lobbyData,navigate])
 
   if (!isConnected) {
       return <div className="items-center font-[3rem]">Loading lobby information...</div>

@@ -9,7 +9,7 @@ export const CreateLobby = async (game,navigate) =>{
 			const res = await axios.post(`${backend_url}/create-lobby`,{game_id: `${game}`})
 			sessionStorage.setItem('user_id',res.data.user_id)
 			sessionStorage.setItem('lobby_id', res.data.lobby_id)
-			navigate('/Lobby')
+			navigate('/Lobby',{ replace: true })
 		}
 	}
 	catch(error){
@@ -24,7 +24,7 @@ export const JoinLobby = async (lobby,navigate) =>{
 			if (res.data.result){
 				sessionStorage.setItem('user_id', res.data.user_id)
 				sessionStorage.setItem('lobby_id',lobby)
-				navigate('/Lobby')
+				navigate('/Lobby',{ replace: true })
 				return true
 			}else{
 				return false
@@ -94,7 +94,7 @@ export const GetRandomLobby = async (navigate) => {
 		if (res.data.result == true){
 			sessionStorage.setItem('user_id', res.data.user_id)
 			sessionStorage.setItem('lobby_id',res.data.lobby_id)
-			navigate('/Lobby')
+			navigate('/Lobby',{ replace: true })
 			return true				
 		}else{
 			return false
