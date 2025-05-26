@@ -4,6 +4,7 @@ import { useDisconnectedUser } from "./hooks/DisconnectedUser"
 import HomePage from "./pages/HomePage"
 import LobbyPage from "./pages/LobbyPage"
 import NotFoundPage from "./pages/NotFoundPage"
+import URLJoin from './components/URLJoin'
 import './index.css'
 
 const router = createBrowserRouter([
@@ -15,6 +16,10 @@ const router = createBrowserRouter([
   {
     path: "/lobby",
     element: <LobbyPage />,
+  },
+  {
+    path:"/join/:code",
+    element: <URLJoin />,
   },
 ])
 
