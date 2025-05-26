@@ -8,7 +8,7 @@ import ChangeIconModal from '../components/ChangeIconModal'
 import UtilityModal from '../components/UtilityModal'
 import { LeaveLobby, StartGame } from '../services/LobbyServices'
 import { useLobbyWebSocket, disconnectFromLobby } from '../services/WebSocketServices'
-
+import LobbyCode from '../components/LobbyCode'
 export default function LobbyPage() {
   const navigate = useNavigate()
   const [error, setError] = useState('')
@@ -104,6 +104,9 @@ export default function LobbyPage() {
         >
           <ArrowBigLeft strokeWidth={2}/>
         </button>
+        <LobbyCode
+          code={lobbyId}
+        />
         <LobbyButton
           label="CHANGE NICKNAME"
           height="h-20"
