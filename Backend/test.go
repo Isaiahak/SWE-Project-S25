@@ -299,6 +299,7 @@ func JoinRandomLobby(c *gin.Context) {
 				if RandomLobby.UsedIDs[i] == false {
 					availableID = *RandomLobby.Members[i]
 					RandomLobby.UsedIDs[i] = true
+					break
 				}
 			}
 			var lobbyID = RandomLobby.LobbyID
