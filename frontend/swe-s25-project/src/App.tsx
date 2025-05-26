@@ -1,15 +1,28 @@
-import Sidebar from './components/SideBar'
-import MainUI from './components/MainUI'
-import useDisconnectedUser from './hooks/DisconnectedUser'
+import React from "react"
+import { RouterProvider, createBrowserRouter } from "react-router-dom"
+import { useDisconnectedUser } from "./hooks/DisconnectedUser"
+import HomePage from "./pages/HomePage"
+import LobbyPage from "./pages/LobbyPage"
+import NotFoundPage from "./pages/NotFoundPage"
+import './index.css'
 
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <HomePage />,
+    errorElement: <NotFoundPage />,
+  },
+  {
+    path: "/lobby",
+    element: <LobbyPage />,
+  },
+])
 
-
-export default function App() {
+const App = () => {
   useDisconnectedUser()
-  return (
-      <div className={`h-screen w-full flex`}>
-        <Sidebar/>
-        <MainUI/>
-      </div>
-  );
+  return(
+    <RouterProvider  router={router} />
+  ) 
 }
+
+export default App
