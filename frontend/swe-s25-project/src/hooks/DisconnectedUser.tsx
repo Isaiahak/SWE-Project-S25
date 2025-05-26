@@ -1,24 +1,25 @@
 import { useEffect} from 'react'
-import {LeaveLobbySessionEnd} from '../services/LobbyServices'
+import { LeaveLobbySessionEnd } from '../services/LobbyServices'
 import { disconnectFromLobby } from '../services/WebSocketServices'
-
 
 export const useDisconnectedUser = () => {
   useEffect(() =>{
-  const handleVisibilityChange = () => {
-    if (document.hidden) {
-        const userID = sessionStorage.getItem('user_id')
-        const lobbyID = sessionStorage.getItem('lobby_id')
+  const handleBeforeUnload = () => {
+      console.log('we get here')
+      const userID = sessionStorage.getItem('user_id')
+      const lobbyID = sessionStorage.getItem('lobby_id')
       if ( userID && lobbyID ){
-        LeaveLobbySessionEnd()
-        disconnectFromLobby()
-      }
+        (async () =>{
+
+          await LeaveLobbySessionEnd()
+          disconnectFromLobby()
+        })()
     } 
   }
-  document.addEventListener('visibilitychange', handleVisibilityChange)
+  window.addEventListener('beforeunload', handleBeforeUnload)
 
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload)
     }
   },[])
 }
