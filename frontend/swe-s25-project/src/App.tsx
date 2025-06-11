@@ -4,13 +4,14 @@ import { useDisconnectedUser } from "./hooks/DisconnectedUser"
 import HomePage from "./pages/HomePage"
 import LobbyPage from "./pages/LobbyPage"
 import NotFoundPage from "./pages/NotFoundPage"
+import GamePage from "./pages/GamePage"
 import URLJoin from './components/URLJoin'
 import './index.css'
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <HomePage />,
+    element: <GamePage />,
     errorElement: <NotFoundPage />,
   },
   {
