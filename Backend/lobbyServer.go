@@ -478,6 +478,10 @@ func changeUserIcon(c *gin.Context) {
 	})
 }
 
+func startGame(c *gin.Context) {
+
+}
+
 // creates the websocket connecting the client frontend
 func webSocketHandler(c *gin.Context) {
 	lobbyID := c.Param("lobby_id")
@@ -609,6 +613,7 @@ func main() {
 	router.POST("/join-lobby", joinLobby)
 	router.POST("/change-lobby-type", changeLobbyType)
 	router.POST("/leave-lobby", leaveLobby)
+	router.POST("/start-game", startGame)
 	router.GET("/ws/lobby/:lobby_id", webSocketHandler)
 
 	router.Run("localhost:8080")

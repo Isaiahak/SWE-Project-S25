@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/google/uuid"
 	"math/rand"
 	"time"
 )
@@ -8,7 +9,7 @@ import (
 type ingredients map[string]map[string]int
 
 type unit struct {
-	unitID        int
+	unitID        string
 	health        int
 	attack        int
 	attackRange   int
@@ -21,7 +22,7 @@ type unit struct {
 }
 
 type roundUnit struct {
-	unitID  int
+	unitID  string
 	health  int
 	attack  int
 	isAlive bool
@@ -58,12 +59,12 @@ func BadAppetite(info <-chan roundInfo, enemyUnits chan<- team, results chan<- r
 		//first thing we need to do is create the enemy team
 		var creationPoints int
 		if i == 0 {
-			creationPoints = 10
+			creationPoints = 4
 		}
 		if i == 1 {
-			creationPoints = 15
+			creationPoints = 5
 		} else {
-			creationPoints = 20
+			creationPoints = 6
 		}
 		var computerTeam = createUnitsForTheRound(creationPoints)
 		//then we send it only proceeds once that team is sent
@@ -107,21 +108,36 @@ func BadAppetite(info <-chan roundInfo, enemyUnits chan<- team, results chan<- r
 // creates units for the round which uses the cp to pick random stats the characters should use
 func createUnitsForTheRound(cp int) team {
 	var enemyTeam team
+	enemyTeam.teamOwner = "enemy"
 	rand.Seed(time.Now().UnixNano())
-
+	var positionInColumn = 0
+	var unitColumnNumber = 0
 	for i := 0; i < 12; i++ {
-		newUnit := unit{
-			unitID:        int, // need to assign values
-			health:        int,
-			attack:        int,
-			attackRange:   int,
-			specialStat1:  string,
-			specialStat2:  string,
-			yPosition:     int,
-			orderInColumn: int,
-			columnNumber:  int,
-			isAlive:       bool,
+		if positionInColumn == 4 {
+			positionInColumn = 0
+			unitColumnNumber++
 		}
+		newUnit := unit{
+			unitID:        uuid.New().String(), // need to assign values
+			health:        1 + rand.Intn(cp),
+			attack:        1 + rand.Intn(cp),
+			attackRange:   1 + rand.Intn(cp),
+			specialStat1:  "",
+			specialStat2:  "",
+			yPosition:     1 + rand.Intn(cp),
+			orderInColumn: positionInColumn,
+			columnNumber:  unitColumnNumber,
+			isAlive:       true,
+		}
+		if unitColumnNumber == 0 {
+			enemyTeam.column1 = append(enemyTeam.column1, newUnit)
+		}
+		if unitColumnNumber == 1 {
+			enemyTeam.column2 = append(enemyTeam.column2, newUnit)
+		} else {
+			enemyTeam.column3 = append(enemyTeam.column3, newUnit)
+		}
+		positionInColumn++
 	}
 	return enemyTeam
 }
