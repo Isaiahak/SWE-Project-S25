@@ -35,11 +35,6 @@ type team struct {
 	column3   []unit
 }
 
-type roundInfo struct {
-	playerTeam    team
-	isPlayerFirst bool
-}
-
 type turn struct {
 	currentUnit roundUnit
 	targetUnit  roundUnit
@@ -53,8 +48,8 @@ type result struct {
 
 var MaximumUnits = 3
 
-func BadAppetite(info <-chan roundInfo, enemyUnits chan<- team, results chan<- result) bool {
-
+func BadAppetite(players int, info <-chan team, enemyUnits chan<- team, results chan<- result) bool {
+	var playerFirst = true
 	for i := 0; i < 3; i++ {
 		//first thing we need to do is create the enemy team
 		var creationPoints int
@@ -70,7 +65,17 @@ func BadAppetite(info <-chan roundInfo, enemyUnits chan<- team, results chan<- r
 		//then we send it only proceeds once that team is sent
 		enemyUnits <- computerTeam
 		//we wait for the round info
-		currentRoundInfo := <-info
+		var playerUnits team
+		var currentUnits team
+		
+		currentUnits.teamOwner = "player"
+		for i := 0; i < players; i++{
+			playerUnits = <-info
+			currentUnits.column1 = append(currentUnits.column1, playerUnits.column1...)
+			currentUnits.column2 = append(currentUnits.column2, playerUnits.column2...)
+			currentUnits.column3 = append(currentUnits.column3, playerUnits.column3...)
+		}
+		
 
 		currentResult := result{
 			isWinner:  false,
@@ -78,7 +83,7 @@ func BadAppetite(info <-chan roundInfo, enemyUnits chan<- team, results chan<- r
 		}
 
 		var currentPlayerTurn bool
-		if currentRoundInfo.isPlayerFirst == false {
+		if playerFirst == false {
 			currentPlayerTurn = false
 		} else {
 			currentPlayerTurn = true
@@ -87,13 +92,13 @@ func BadAppetite(info <-chan roundInfo, enemyUnits chan<- team, results chan<- r
 		for !currentResult.roundOver {
 			if currentPlayerTurn == true {
 				//player action
-				var complete, playerWins = combat(currentRoundInfo.playerTeam, computerTeam, currentResult.roundTurns)
+				var complete, playerWins = combat(currentUnits, computerTeam, currentResult.roundTurns)
 				currentResult.isWinner = playerWins
 				currentResult.roundOver = complete
 				currentPlayerTurn = false
 			} else {
 				//computer action
-				var complete, playerWins = combat(computerTeam, currentRoundInfo.playerTeam, currentResult.roundTurns)
+				var complete, playerWins = combat(computerTeam, currentUnits, currentResult.roundTurns)
 				currentResult.isWinner = playerWins
 				currentResult.roundOver = complete
 				currentPlayerTurn = true
@@ -101,6 +106,7 @@ func BadAppetite(info <-chan roundInfo, enemyUnits chan<- team, results chan<- r
 		}
 		// goes in until the roundOver bool is set to true
 		results <- currentResult
+		playerFirst = !playerFirst
 	}
 	return true
 }

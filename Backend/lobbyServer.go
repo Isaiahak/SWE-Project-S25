@@ -47,6 +47,20 @@ type LobbyData struct {
 	UserIcons     []int
 }
 
+type GameInstance struct{
+	LobbyID string
+	GameID string
+	Info chan team
+	EnemyUnits chan team
+	RoundResults chan result
+	ConnectedUsers *map[string]WebSocketInfo 
+}
+
+type gameInstanceManager struct{
+	gameInstances map[string]*GameInstance
+	mutex sync.RWMutex
+}
+
 // splice of lobby structs containing initial lobbies
 type LobbyManager struct {
 	lobbies map[string]*Lobby
@@ -68,6 +82,10 @@ var upgrader = websocket.Upgrader{
 
 var lobbyManager = &LobbyManager{
 	lobbies: make(map[string]*Lobby),
+}
+
+var gameManager = &gameInstanceManager{
+	gameInstances: make(map[string]*GameInstance),
 }
 
 // random nickname generator
@@ -479,6 +497,68 @@ func changeUserIcon(c *gin.Context) {
 }
 
 func startGame(c *gin.Context) {
+	var input struct{
+		LobbyID string `json:"lobby_id" binding:"required"`
+		GameID string `json:"game_id" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"result": "false",
+			"error": err.Error(),
+		})
+	}
+	// we need to ensure both lobby id and game id exist
+	switch input.GameID{
+		case "1":
+			lobbyManager.mutex.RLock()
+			NewGameInstance := GameInstance{
+				LobbyID: input.LobbyID,
+				GameID: input.GameID,
+				ConnectedUsers: &lobbyManager.lobbies[input.LobbyID].ConnectedUsers,
+			}
+			var Players = lobbyManager.lobbies[input.LobbyID].PlayerCount
+			lobbyManager.mutex.RUnlock()
+			NewGameInstance.Info = make(chan team)
+			NewGameInstance.EnemyUnits = make(chan team)
+			NewGameInstance.RoundResults= make(chan result)
+			gameManager.mutex.Lock()
+			gameManager.gameInstances[input.LobbyID] = &NewGameInstance
+			gameManager.mutex.Unlock()
+			go BadAppetite(Players, NewGameInstance.Info, NewGameInstance.EnemyUnits,NewGameInstance.RoundResults)
+			broadcastEnemyUnits(input.LobbyID)
+	}
+
+}
+
+func confirmUnits(c *gin.Context){
+	var input struct{
+		PlayerID string `json:"user_id" binding:"required"`
+		PlayerTeam team `json:"player_team" binding:"required"`
+		LobbyID string `json:"lobby_id" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"result": "false",
+			"error": err.Error(),
+		})
+	}
+
+	gameManager.mutex.RLock()
+	game, exists := gameManager.gameInstances[input.LobbyID]
+
+	if !exists{
+		return
+	}
+
+	game.Info <- input.PlayerTeam
+	gameManager.mutex.RUnlock()
+	go broadcastRoundResults(input.LobbyID)
+
+	c.IndentedJSON(http.StatusOK, gin.H{
+		"result": "true",
+	})
 
 }
 
@@ -542,6 +622,50 @@ func webSocketHandler(c *gin.Context) {
 			break
 		}
 	}
+}
+func broadcastEnemyUnits(lobbyID string){
+	gameManager.mutex.RLock()
+	game, exists := gameManager.gameInstances[lobbyID]
+	
+	if !exists{
+		return
+	}
+	//	waits for the enemy units
+	enemyUnits := <- game.EnemyUnits
+
+	gameData := gin.H{
+		"enemy_units": enemyUnits,
+	}
+
+	for userid := range *game.ConnectedUsers{
+		var sockets = *game.ConnectedUsers
+		var socket = sockets[userid]
+		socket.Connection.WriteJSON(gameData)
+	}
+	gameManager.mutex.RUnlock()
+}
+
+func broadcastRoundResults(lobbyID string){
+	gameManager.mutex.RLock()
+	game, exists := gameManager.gameInstances[lobbyID]
+
+	if !exists{
+		return
+	}
+
+	roundResult := <- game.RoundResults
+
+	roundData := gin.H{
+		"round_result" : roundResult,
+	}
+
+	for userid := range *game.ConnectedUsers{
+		var sockets = *game.ConnectedUsers
+		var socket = sockets[userid]
+		socket.Connection.WriteJSON(roundData)
+	}
+	gameManager.mutex.RUnlock()
+
 }
 
 func broadcastLobbyUpdate(lobbyID string) {
@@ -615,6 +739,6 @@ func main() {
 	router.POST("/leave-lobby", leaveLobby)
 	router.POST("/start-game", startGame)
 	router.GET("/ws/lobby/:lobby_id", webSocketHandler)
-
+	router.POST("/confirm-units", confirmUnits)
 	router.Run("localhost:8080")
 }
