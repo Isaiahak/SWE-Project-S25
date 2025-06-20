@@ -9,7 +9,6 @@ import (
 type ingredients map[string]map[string]int
 
 type unit struct {
-	unitID        string
 	health        int
 	attack        int
 	attackRange   int
@@ -22,7 +21,6 @@ type unit struct {
 }
 
 type roundUnit struct {
-	unitID  string
 	health  int
 	attack  int
 	isAlive bool
@@ -67,15 +65,14 @@ func BadAppetite(players int, info <-chan team, enemyUnits chan<- team, results 
 		//we wait for the round info
 		var playerUnits team
 		var currentUnits team
-		
+
 		currentUnits.teamOwner = "player"
-		for i := 0; i < players; i++{
+		for i := 0; i < players; i++ {
 			playerUnits = <-info
 			currentUnits.column1 = append(currentUnits.column1, playerUnits.column1...)
 			currentUnits.column2 = append(currentUnits.column2, playerUnits.column2...)
 			currentUnits.column3 = append(currentUnits.column3, playerUnits.column3...)
 		}
-		
 
 		currentResult := result{
 			isWinner:  false,
@@ -124,7 +121,6 @@ func createUnitsForTheRound(cp int) team {
 			unitColumnNumber++
 		}
 		newUnit := unit{
-			unitID:        uuid.New().String(), // need to assign values
 			health:        1 + rand.Intn(cp),
 			attack:        1 + rand.Intn(cp),
 			attackRange:   1 + rand.Intn(cp),
@@ -272,12 +268,10 @@ func abs(x int) int {
 
 func createRoundUnit(attacker unit, enemy unit) (roundUnit, roundUnit) {
 	var attackerRoundUnit roundUnit
-	attackerRoundUnit.unitID = attacker.unitID
 	attackerRoundUnit.health = attacker.health
 	attackerRoundUnit.attack = attacker.health
 
 	var enemyRoundUnit roundUnit
-	enemyRoundUnit.unitID = enemy.unitID
 	enemyRoundUnit.health = enemy.health
 	enemyRoundUnit.attack = enemy.health
 

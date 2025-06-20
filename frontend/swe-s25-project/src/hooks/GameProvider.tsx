@@ -1,5 +1,5 @@
 import {useState} from 'react'
-import {gameContext} from './useGameContext.tsx'
+import {gameContext} from './UseGameContext'
 
 function GameProvider({children}){
 	const [game, setGame] = useState(1)

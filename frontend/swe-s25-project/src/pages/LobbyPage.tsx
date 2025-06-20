@@ -9,6 +9,7 @@ import UtilityModal from '../components/UtilityModal'
 import { LeaveLobby, StartGame } from '../services/LobbyServices'
 import { useLobbyWebSocket, disconnectFromLobby } from '../services/WebSocketServices'
 import LobbyCode from '../components/LobbyCode'
+
 export default function LobbyPage() {
   const navigate = useNavigate()
   const [error, setError] = useState('')
