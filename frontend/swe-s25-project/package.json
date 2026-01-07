@@ -14,7 +14,7 @@
     "axios": "^1.9.0",
     "js-cookie": "^3.0.5",
     "js-cookies": "^1.0.4",
-    "lucide-react": "^0.507.0",
+    "lucide-react": "^0.561.0",
     "motion": "^12.12.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
